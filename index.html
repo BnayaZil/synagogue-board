@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>מחולל לוח מודעות – בית הכנסת</title>
+  <meta name="description" content="מחולל לוח מודעות לבית הכנסת – מלאו את הטופס וקבלו תמונה מוכנה להורדה" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%95%8E%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="assets/fonts.css" />
+  <link rel="stylesheet" href="vendor/quill.snow.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="app-bar">
+    <div class="app-bar__title">
+      <span class="app-bar__logo">🕎</span>
+      <div>
+        <h1>מחולל לוח בית הכנסת</h1>
+        <p>מלאו את הפרטים – הלוח מתעדכן מיד. בסיום, הורידו כתמונה.</p>
+      </div>
+    </div>
+    <div class="app-bar__actions">
+      <button id="btn-example" class="btn btn--ghost" type="button">טען דוגמה</button>
+      <button id="btn-clear" class="btn btn--ghost" type="button">נקה הכל</button>
+      <button id="btn-download" class="btn btn--primary" type="button">
+        <span class="btn__spinner" hidden></span>
+        <span class="btn__label">⬇ הורדת תמונה (PNG)</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- ===================== FORM PANEL ===================== -->
+    <section class="form-panel" aria-label="טופס עריכה">
+      <form id="editor" autocomplete="off">
+
+        <fieldset class="card">
+          <legend>כותרות ראשיות</legend>
+          <label class="field">
+            <span class="field__label">כותרת ראשית</span>
+            <input type="text" id="mainHeadline" placeholder="למשל: בית כנסת היכל גבריאל" />
+          </label>
+          <label class="field">
+            <span class="field__label">כותרת משנה</span>
+            <input type="text" id="subHeadline" placeholder="למשל: פרשת פנחס" />
+          </label>
+        </fieldset>
+
+        <div class="card">
+          <div class="card__head">
+            <h2>ארבע התיבות</h2>
+            <p class="card__hint">כל תיבה: כותרת + שורות (שעה וכותרת זו לצד זו). שורה ללא שעה מוצגת כהערה ממורכזת.</p>
+          </div>
+          <div id="boxes"></div>
+        </div>
+
+        <fieldset class="card">
+          <legend>סרגל צד</legend>
+          <div class="field">
+            <span class="field__label">תמונה</span>
+            <div class="image-field">
+              <div class="image-preview" id="sideImagePreview">
+                <span class="image-preview__empty">אין תמונה</span>
+              </div>
+              <div class="image-field__controls">
+                <label class="btn btn--ghost btn--sm">
+                  בחר תמונה
+                  <input type="file" id="sideImageInput" accept="image/*" hidden />
+                </label>
+                <button type="button" class="btn btn--ghost btn--sm" id="sideImageRemove">הסר</button>
+              </div>
+            </div>
+          </div>
+          <label class="field">
+            <span class="field__label">כותרת הסרגל</span>
+            <input type="text" id="sideTitle" placeholder="למשל: הפטרות ימי בין המצרים" />
+          </label>
+          <div class="field">
+            <span class="field__label">טקסט חופשי</span>
+            <div id="sideTextEditor"></div>
+            <p class="field__note">עורך טקסט מלא: הדגשה, נטוי, יישור, רשימות ועוד. תומך עברית ו‑RTL.</p>
+          </div>
+        </fieldset>
+
+        <p class="autosave-note" id="autosaveNote">השינויים נשמרים אוטומטית בדפדפן זה.</p>
+      </form>
+    </section>
+
+    <!-- ===================== PREVIEW PANEL ===================== -->
+    <section class="preview-panel" aria-label="תצוגה מקדימה">
+      <div class="preview-toolbar">
+        <span class="preview-toolbar__title">תצוגה מקדימה</span>
+        <span class="preview-toolbar__dim">1600 × 900</span>
+      </div>
+      <div class="preview-viewport" id="previewViewport">
+        <!-- sizer reserves the scaled footprint; board-scale visually scales the natural board -->
+        <div class="board-sizer" id="boardSizer">
+        <div class="board-scale" id="boardScale">
+          <!-- The board is rendered at its natural 1600×900 size and exported as-is -->
+          <div id="board" class="board" dir="rtl">
+            <div class="board__main">
+              <header class="board__header">
+                <h1 class="board__title" id="b-main"></h1>
+                <p class="board__subtitle" id="b-sub"></p>
+              </header>
+              <div class="board__grid" id="b-grid"></div>
+            </div>
+            <aside class="board__side">
+              <div class="board__side-image" id="b-side-image"></div>
+              <h2 class="board__side-title" id="b-side-title"></h2>
+              <div class="board__side-text" id="b-side-text"></div>
+            </aside>
+          </div>
+        </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="vendor/quill.js"></script>
+  <script src="vendor/html2canvas.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
