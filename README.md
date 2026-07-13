@@ -12,15 +12,23 @@ click **הורדת תמונה (PNG)** to export a print-ready 3200×1800 image.
   - Four boxes, each with a title and any number of *time + label* rows
     (a row with no time renders as a centred note, e.g. *"לא יתקיימו שיעורים השבוע"*)
   - Sidebar with an image, a title, and free text
+- **Automatic parsha & Shabbat times (Hebcal)** — pick a Shabbat date (or press
+  *השבת הקרובה*) and the weekly **parsha** (sub-headline) plus **candle-lighting**
+  times for Jerusalem & Tel Aviv and **havdalah** are computed with
+  [`@hebcal/core`](https://github.com/hebcal/hebcal-es6) and filled into the board.
+  Every value stays editable by hand.
 - **Fully-featured rich-text editor** (Quill) for the sidebar free text — bold,
   italic, underline, colour, lists, alignment, and RTL direction.
 - **Sidebar text auto-fit** — text is scaled down automatically so it always
   fits inside the 900px canvas instead of being clipped.
 - **Image upload** for the sidebar picture (stored locally in the browser).
 - **PNG export** via `html2canvas` — the exact board you see, at 2× resolution.
-- **Autosave** — your content is kept in the browser's `localStorage`.
-- **Fully self-hosted** — Hebrew fonts (Heebo + Rubik), Quill, and html2canvas are
-  all bundled; the page needs no external network requests to work.
+- **Autosave** — all your content (title, sidebar, times, chosen date) is kept in
+  the browser's `localStorage`, so it is exactly as you left it on the next visit.
+  Hebcal only fills the parsha and the Shabbat-times box; your headline and sidebar
+  are never overwritten by it.
+- **Fully self-hosted** — Hebrew fonts (Heebo + Rubik), Quill, html2canvas, and
+  Hebcal are all bundled; the page needs no external network requests to work.
 
 ## Usage
 
@@ -42,7 +50,15 @@ assets/fonts/*.woff2 # Heebo + Rubik (Hebrew + Latin subsets)
 assets/sample-building.jpg  # default placeholder image
 vendor/quill.*      # rich-text editor
 vendor/html2canvas.min.js   # DOM → canvas for the PNG export
+vendor/hebcal.bundle.min.js # @hebcal/core — parsha + Shabbat times (GPLv2)
 ```
+
+## Licenses of bundled libraries
+
+- **@hebcal/core** — GPLv2
+- **Quill** — BSD-3-Clause
+- **html2canvas** — MIT
+- **Heebo / Rubik** fonts — SIL Open Font License 1.1
 
 ## Running locally
 

@@ -5,16 +5,78 @@
 (function () {
   'use strict';
 
-  var STORAGE_KEY = 'synaboard.v1';
+  var STORAGE_KEY = 'synaboard.v2';
 
   // Position labels for the four boxes (visual placement in the main area)
   var BOX_POS = ['עליון · ימין', 'עליון · שמאל', 'תחתון · ימין', 'תחתון · שמאל'];
 
-  /* ---------- Default example (matches the reference image) ---------- */
+  /* ---------- Date helpers ---------- */
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  function toISO(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+  function parseISO(s) {
+    var p = (s || '').split('-');
+    return new Date(+p[0], (+p[1] || 1) - 1, +p[2] || 1);
+  }
+  function upcomingSaturday() {
+    var d = new Date();
+    d.setHours(12, 0, 0, 0);
+    d.setDate(d.getDate() + ((6 - d.getDay() + 7) % 7)); // days until the next Saturday (0 if today)
+    return d;
+  }
+
+  /* ---------- Hebcal (parsha + Shabbat times) ---------- */
+  function hebcalAvailable() {
+    return typeof window.hebcal !== 'undefined' && window.hebcal.HebrewCalendar;
+  }
+  // Returns { parsha, jerusalem, telaviv, havdalah } for the Shabbat on saturdayISO, or null.
+  function computeShabbat(saturdayISO) {
+    if (!hebcalAvailable()) return null;
+    var H = window.hebcal;
+    var sat = parseISO(saturdayISO);
+    var fri = new Date(sat.getFullYear(), sat.getMonth(), sat.getDate() - 1);
+
+    function cityTimes(name, mins) {
+      var loc;
+      try { loc = H.Location.lookup(name); } catch (e) { loc = null; }
+      if (!loc) return {};
+      loc.candleLightingMins = mins;
+      var out = {};
+      try {
+        var evs = H.HebrewCalendar.calendar({ start: fri, end: sat, location: loc, candlelighting: true, il: true });
+        evs.forEach(function (ev) {
+          var d = ev.getDesc();
+          if (d === 'Candle lighting') out.candle = ev.fmtTime;
+          else if (d === 'Havdalah') out.havdalah = ev.fmtTime;
+        });
+      } catch (e) {}
+      return out;
+    }
+
+    var jer = cityTimes('Jerusalem', 40);
+    var tlv = cityTimes('Tel Aviv', 18);
+
+    var parsha = null;
+    try {
+      var sed = H.HebrewCalendar.calendar({ start: sat, end: sat, sedrot: true, il: true });
+      sed.forEach(function (ev) {
+        if (ev.getFlags() & H.flags.PARSHA_HASHAVUA) parsha = ev.render('he-x-NoNikud');
+      });
+    } catch (e) {}
+
+    return {
+      parsha: parsha,
+      jerusalem: jer.candle || '',
+      telaviv: tlv.candle || '',
+      havdalah: tlv.havdalah || jer.havdalah || ''
+    };
+  }
+
+  /* ---------- Default example ---------- */
   function defaultState() {
     return {
-      mainHeadline: 'בית כנסת היכל גבריאל',
+      mainHeadline: 'בית כנסת כפר גנים ב',
       subHeadline: 'פרשת פנחס',
+      shabbatDate: toISO(upcomingSaturday()),
       boxes: [
         {
           title: 'זמני הדלקת נרות שבת',
@@ -36,8 +98,7 @@
         {
           title: 'זמני תפילות יום חול',
           rows: [
-            { time: '6:15', label: 'שחרית (א‑ה):' },
-            { time: '8:15', label: 'שחרית מנין שני יום שישי:' },
+            { time: '7:00', label: 'שחרית (א‑ה):' },
             { time: '19:40', label: 'מנחה (א‑ה):' },
             { time: '20:15', label: 'ערבית (א‑ה):' }
           ]
@@ -63,7 +124,10 @@
   }
 
   /* ---------- State ---------- */
-  var state = load() || defaultState();
+  var loadedState = load();
+  var freshLoad = !loadedState;
+  var state = loadedState || defaultState();
+  if (!state.shabbatDate) state.shabbatDate = toISO(upcomingSaturday()); // migrate older saved state
   var quill = null;
   var suppressQuill = false;
 
@@ -108,6 +172,8 @@
     sideImageInput: $('sideImageInput'),
     sideImagePreview: $('sideImagePreview'),
     sideImageRemove: $('sideImageRemove'),
+    shabbatDate: $('shabbatDate'),
+    shabbatStatus: $('shabbatStatus'),
     // board
     bMain: $('b-main'),
     bSub: $('b-sub'),
@@ -307,6 +373,7 @@
     els.main.value = state.mainHeadline || '';
     els.sub.value = state.subHeadline || '';
     els.sideTitle.value = state.sidebar.title || '';
+    if (els.shabbatDate) els.shabbatDate.value = state.shabbatDate || '';
     renderBoxesForm();
     renderSideImagePreview();
     if (quill) {
@@ -365,6 +432,33 @@
       save();
     };
     reader.readAsDataURL(file);
+  }
+
+  /* ============================================================
+     SHABBAT (Hebcal) — fill parsha (sub-headline) + candle-lighting box
+     ============================================================ */
+  function applyShabbat() {
+    var res = computeShabbat(state.shabbatDate);
+    if (!res) {
+      if (els.shabbatStatus) els.shabbatStatus.textContent =
+        'ספריית Hebcal לא נטענה — ניתן להזין את הפרשה והזמנים ידנית.';
+      return;
+    }
+    if (res.parsha) state.subHeadline = res.parsha;
+    // The first box is the Shabbat candle-lighting box — fill it with computed times.
+    state.boxes[0].rows = [
+      { time: res.jerusalem, label: 'כניסת שבת (ירושלים):' },
+      { time: res.telaviv, label: 'כניסת שבת (תל אביב):' },
+      { time: res.havdalah, label: 'צאת שבת:' }
+    ];
+    syncFormFromState();
+    renderBoard();
+    save();
+    if (els.shabbatStatus) {
+      els.shabbatStatus.textContent = '✓ ' + (res.parsha || 'ללא פרשה קבועה') +
+        ' · כניסת שבת: י‑ם ' + (res.jerusalem || '—') + ', ת״א ' + (res.telaviv || '—') +
+        ' · צאת שבת ' + (res.havdalah || '—');
+    }
   }
 
   /* ============================================================
@@ -460,16 +554,29 @@
       renderSideImagePreview(); renderBoard(); save();
     });
 
+    // Shabbat / Hebcal controls
+    els.shabbatDate.addEventListener('change', function () {
+      state.shabbatDate = els.shabbatDate.value || state.shabbatDate;
+      applyShabbat();
+    });
+    $('btnUpcoming').addEventListener('click', function () {
+      state.shabbatDate = toISO(upcomingSaturday());
+      els.shabbatDate.value = state.shabbatDate;
+      applyShabbat();
+    });
+    $('btnRecalc').addEventListener('click', applyShabbat);
+
     $('btn-download').addEventListener('click', download);
     $('btn-example').addEventListener('click', function () {
       if (!confirm('לטעון את תוכן הדוגמה? הפעולה תחליף את מה שממולא כעת.')) return;
       state = defaultState();
-      syncFormFromState(); renderBoard(); save();
+      syncFormFromState(); renderBoard(); applyShabbat();
     });
     $('btn-clear').addEventListener('click', function () {
       if (!confirm('לנקות את כל השדות?')) return;
       state = {
         mainHeadline: '', subHeadline: '',
+        shabbatDate: toISO(upcomingSaturday()),
         boxes: [
           { title: '', rows: [{ time: '', label: '' }] },
           { title: '', rows: [{ time: '', label: '' }] },
@@ -498,5 +605,9 @@
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(fitSidebarText);
     }
+
+    // On a first visit (nothing saved yet), auto-fill parsha + Shabbat times.
+    // Returning visitors keep exactly what they saved (their title & sidebar included).
+    if (freshLoad) applyShabbat();
   });
 })();
