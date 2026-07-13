@@ -17,7 +17,13 @@
     { id: 'gold',     name: 'זהב מלכותי',  vars: { '--board-bg': '#faf6ec', '--teal': '#b08d57', '--teal-soft': '#c2a06b', '--board-ink': '#2a2620', '--board-line': '#ddc9a0', '--board-img-bg': '#e6dcc4' } },
     { id: 'azure',    name: 'תכלת',        vars: { '--board-bg': '#f5f8fb', '--teal': '#2f6fb0', '--teal-soft': '#5c93cc', '--board-ink': '#1b2430', '--board-line': '#bcd2e8', '--board-img-bg': '#dce6f0' } },
     { id: 'olive',    name: 'זית',         vars: { '--board-bg': '#f0efe4', '--teal': '#4f7a4a', '--teal-soft': '#6f9a68', '--board-ink': '#23281f', '--board-line': '#b9c9ac', '--board-img-bg': '#d8dcc6' } },
-    { id: 'burgundy', name: 'בורדו',       vars: { '--board-bg': '#f4efe9', '--teal': '#8f3b46', '--teal-soft': '#ab5f68', '--board-ink': '#2b201f', '--board-line': '#d8c2ba', '--board-img-bg': '#e6d6ce' } }
+    { id: 'burgundy', name: 'בורדו',       vars: { '--board-bg': '#f4efe9', '--teal': '#8f3b46', '--teal-soft': '#ab5f68', '--board-ink': '#2b201f', '--board-line': '#d8c2ba', '--board-img-bg': '#e6d6ce' } },
+    { id: 'sand',     name: 'חול מדבר',    vars: { '--board-bg': '#f3e9dc', '--teal': '#b5623b', '--teal-soft': '#c78560', '--board-ink': '#2c2119', '--board-line': '#dec4a6', '--board-img-bg': '#e7d5bf' } },
+    { id: 'charcoal', name: 'פחם וזהב',    vars: { '--board-bg': '#23252b', '--teal': '#c9a24a', '--teal-soft': '#d4b76e', '--board-ink': '#edeef0', '--board-line': '#3b3e46', '--board-img-bg': '#2e3138' } },
+    { id: 'plum',     name: 'סגול מלכותי', vars: { '--board-bg': '#f4f1f7', '--teal': '#6b4a86', '--teal-soft': '#8a6ba3', '--board-ink': '#241f2b', '--board-line': '#d0c4dd', '--board-img-bg': '#e2d8ec' } },
+    { id: 'emerald',  name: 'אזמרגד',      vars: { '--board-bg': '#16302e', '--teal': '#7fc3a8', '--teal-soft': '#9fceb8', '--board-ink': '#eaf3ee', '--board-line': '#2f4a45', '--board-img-bg': '#22403c' } },
+    { id: 'rose',     name: 'ורוד עתיק',   vars: { '--board-bg': '#f7eeee', '--teal': '#a75c6a', '--teal-soft': '#c07f8a', '--board-ink': '#2c2122', '--board-line': '#e0c6ca', '--board-img-bg': '#edd8dc' } },
+    { id: 'indigo',   name: 'אינדיגו',     vars: { '--board-bg': '#eef0f6', '--teal': '#3b4b8c', '--teal-soft': '#6570ab', '--board-ink': '#1e2130', '--board-line': '#c3c9de', '--board-img-bg': '#d9deec' } }
   ];
   function themeById(id) {
     for (var i = 0; i < THEMES.length; i++) if (THEMES[i].id === id) return THEMES[i];
