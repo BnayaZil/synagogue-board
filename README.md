@@ -7,6 +7,9 @@ click **הורדת תמונה (PNG)** to export a print-ready 3200×1800 image.
 ## Features
 
 - **Live preview** — every edit re-renders the board instantly.
+- **Theme presets** — six ready-made looks (קלאסי / לילה / זהב מלכותי / תכלת / זית / בורדו).
+  The chosen theme is saved and is applied to the exported PNG as well. Themes are
+  driven by CSS variables on the board, so adding a new preset is one entry in `THEMES`.
 - **Full structure of the reference layout:**
   - Main headline + sub-headline
   - Four boxes, each with a title and any number of *time + label* rows

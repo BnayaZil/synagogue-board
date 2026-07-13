@@ -10,6 +10,20 @@
   // Position labels for the four boxes (visual placement in the main area)
   var BOX_POS = ['עליון · ימין', 'עליון · שמאל', 'תחתון · ימין', 'תחתון · שמאל'];
 
+  /* ---------- Theme presets (each overrides the board's CSS variables) ---------- */
+  var THEMES = [
+    { id: 'classic',  name: 'קלאסי',       vars: { '--board-bg': '#eeecdd', '--teal': '#4f86a3', '--teal-soft': '#6d9cb2', '--board-ink': '#1c1c1c', '--board-line': '#a9c2bf', '--board-img-bg': '#dcdccf' } },
+    { id: 'night',    name: 'לילה',        vars: { '--board-bg': '#1e2733', '--teal': '#7fb4c9', '--teal-soft': '#9fb8c4', '--board-ink': '#eef2f5', '--board-line': '#3c4a57', '--board-img-bg': '#2a3542' } },
+    { id: 'gold',     name: 'זהב מלכותי',  vars: { '--board-bg': '#faf6ec', '--teal': '#b08d57', '--teal-soft': '#c2a06b', '--board-ink': '#2a2620', '--board-line': '#ddc9a0', '--board-img-bg': '#e6dcc4' } },
+    { id: 'azure',    name: 'תכלת',        vars: { '--board-bg': '#f5f8fb', '--teal': '#2f6fb0', '--teal-soft': '#5c93cc', '--board-ink': '#1b2430', '--board-line': '#bcd2e8', '--board-img-bg': '#dce6f0' } },
+    { id: 'olive',    name: 'זית',         vars: { '--board-bg': '#f0efe4', '--teal': '#4f7a4a', '--teal-soft': '#6f9a68', '--board-ink': '#23281f', '--board-line': '#b9c9ac', '--board-img-bg': '#d8dcc6' } },
+    { id: 'burgundy', name: 'בורדו',       vars: { '--board-bg': '#f4efe9', '--teal': '#8f3b46', '--teal-soft': '#ab5f68', '--board-ink': '#2b201f', '--board-line': '#d8c2ba', '--board-img-bg': '#e6d6ce' } }
+  ];
+  function themeById(id) {
+    for (var i = 0; i < THEMES.length; i++) if (THEMES[i].id === id) return THEMES[i];
+    return THEMES[0];
+  }
+
   /* ---------- Date helpers ---------- */
   function pad2(n) { return (n < 10 ? '0' : '') + n; }
   function toISO(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
@@ -74,6 +88,7 @@
   /* ---------- Default example ---------- */
   function defaultState() {
     return {
+      theme: 'classic',
       mainHeadline: 'בית כנסת כפר גנים ב',
       subHeadline: 'פרשת פנחס',
       shabbatDate: toISO(upcomingSaturday()),
@@ -128,6 +143,7 @@
   var freshLoad = !loadedState;
   var state = loadedState || defaultState();
   if (!state.shabbatDate) state.shabbatDate = toISO(upcomingSaturday()); // migrate older saved state
+  if (!state.theme) state.theme = 'classic';
   var quill = null;
   var suppressQuill = false;
 
@@ -165,6 +181,7 @@
   /* ---------- DOM refs ---------- */
   var $ = function (id) { return document.getElementById(id); };
   var els = {
+    themes: $('themes'),
     main: $('mainHeadline'),
     sub: $('subHeadline'),
     boxes: $('boxes'),
@@ -186,6 +203,39 @@
     boardSizer: $('boardSizer'),
     viewport: $('previewViewport')
   };
+
+  /* ============================================================
+     THEME
+     ============================================================ */
+  function applyTheme(id) {
+    var t = themeById(id);
+    var keys = Object.keys(t.vars);
+    for (var i = 0; i < keys.length; i++) els.board.style.setProperty(keys[i], t.vars[keys[i]]);
+  }
+  function renderThemes() {
+    els.themes.innerHTML = '';
+    THEMES.forEach(function (t) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'theme-swatch' + (state.theme === t.id ? ' is-active' : '');
+      b.title = t.name;
+      b.innerHTML =
+        '<div class="theme-swatch__preview" style="background:' + t.vars['--board-bg'] + '">' +
+          '<div class="theme-swatch__stack">' +
+            '<span class="theme-swatch__bar" style="background:' + t.vars['--teal'] + '"></span>' +
+            '<span class="theme-swatch__bar theme-swatch__bar--sm" style="background:' + t.vars['--board-ink'] + '"></span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="theme-swatch__name">' + t.name + '</div>';
+      b.addEventListener('click', function () {
+        state.theme = t.id;
+        applyTheme(t.id);
+        renderThemes();
+        save();
+      });
+      els.themes.appendChild(b);
+    });
+  }
 
   /* ============================================================
      BOARD RENDER
@@ -374,6 +424,8 @@
     els.sub.value = state.subHeadline || '';
     els.sideTitle.value = state.sidebar.title || '';
     if (els.shabbatDate) els.shabbatDate.value = state.shabbatDate || '';
+    renderThemes();
+    applyTheme(state.theme);
     renderBoxesForm();
     renderSideImagePreview();
     if (quill) {
@@ -506,7 +558,7 @@
     (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve())
       .then(function () {
         return html2canvas(els.board, {
-          backgroundColor: '#eeecdd',
+          backgroundColor: themeById(state.theme).vars['--board-bg'],
           scale: 2,
           width: 1600,
           height: 900,
@@ -569,12 +621,15 @@
     $('btn-download').addEventListener('click', download);
     $('btn-example').addEventListener('click', function () {
       if (!confirm('לטעון את תוכן הדוגמה? הפעולה תחליף את מה שממולא כעת.')) return;
+      var keepTheme = state.theme;
       state = defaultState();
+      state.theme = keepTheme;
       syncFormFromState(); renderBoard(); applyShabbat();
     });
     $('btn-clear').addEventListener('click', function () {
       if (!confirm('לנקות את כל השדות?')) return;
       state = {
+        theme: state.theme,
         mainHeadline: '', subHeadline: '',
         shabbatDate: toISO(upcomingSaturday()),
         boxes: [
