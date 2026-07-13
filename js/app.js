@@ -7,9 +7,6 @@
 
   var STORAGE_KEY = 'synaboard.v2';
 
-  // Position labels for the four boxes (visual placement in the main area)
-  var BOX_POS = ['עליון · ימין', 'עליון · שמאל', 'תחתון · ימין', 'תחתון · שמאל'];
-
   /* ---------- Theme presets (each overrides the board's CSS variables) ---------- */
   var THEMES = [
     { id: 'classic',  name: 'קלאסי',       vars: { '--board-bg': '#eeecdd', '--teal': '#4f86a3', '--teal-soft': '#6d9cb2', '--board-ink': '#1c1c1c', '--board-line': '#a9c2bf', '--board-img-bg': '#dcdccf' } },
@@ -95,12 +92,14 @@
   function defaultState() {
     return {
       theme: 'classic',
+      boxesPerRow: 2,
       mainHeadline: 'בית כנסת כפר גנים ב',
       subHeadline: 'פרשת פנחס',
       shabbatDate: toISO(upcomingSaturday()),
       boxes: [
         {
           title: 'זמני הדלקת נרות שבת',
+          shabbat: true, // Hebcal fills this box's rows
           rows: [
             { time: '19:10', label: 'כניסת שבת (ירושלים):' },
             { time: '19:30', label: 'כניסת שבת (תל אביב):' },
@@ -150,6 +149,10 @@
   var state = loadedState || defaultState();
   if (!state.shabbatDate) state.shabbatDate = toISO(upcomingSaturday()); // migrate older saved state
   if (!state.theme) state.theme = 'classic';
+  if (!state.boxesPerRow) state.boxesPerRow = 2;
+  if (Array.isArray(state.boxes) && state.boxes.length && !state.boxes.some(function (b) { return b.shabbat; })) {
+    state.boxes[0].shabbat = true; // keep Hebcal targeting the first box for older saved state
+  }
   var quill = null;
   var suppressQuill = false;
 
@@ -191,6 +194,7 @@
     main: $('mainHeadline'),
     sub: $('subHeadline'),
     boxes: $('boxes'),
+    boxesPerRow: $('boxesPerRow'),
     sideTitle: $('sideTitle'),
     sideImageInput: $('sideImageInput'),
     sideImagePreview: $('sideImagePreview'),
@@ -251,6 +255,8 @@
     els.bSub.textContent = state.subHeadline || '';
 
     // boxes
+    var perRow = Math.max(1, Math.min(4, state.boxesPerRow || 2));
+    els.bGrid.style.gridTemplateColumns = 'repeat(' + perRow + ', 1fr)';
     els.bGrid.innerHTML = '';
     state.boxes.forEach(function (box) {
       var boxEl = document.createElement('div');
@@ -299,6 +305,26 @@
     els.bSideText.innerHTML = state.sidebar.html || '';
 
     fitSidebarText();
+    fitBoxes();
+  }
+
+  /* Shrink the box content (title + rows scale together via --box-scale) until every
+     box fits its grid cell — so extra boxes / more rows never clip or overlap. */
+  function fitBoxes() {
+    var grid = els.bGrid;
+    grid.style.setProperty('--box-scale', '1');
+    function overflows() {
+      var boxes = grid.getElementsByClassName('board__box');
+      for (var i = 0; i < boxes.length; i++) {
+        if (boxes[i].scrollHeight > boxes[i].clientHeight + 1) return true;
+      }
+      return false;
+    }
+    var scale = 1;
+    while (scale > 0.5 && overflows()) {
+      scale -= 0.04;
+      grid.style.setProperty('--box-scale', scale.toFixed(2));
+    }
   }
 
   /* Scale the sidebar free-text down until the whole sidebar column fits the
@@ -330,7 +356,7 @@
       head.className = 'box-editor__head';
       var pos = document.createElement('span');
       pos.className = 'box-editor__pos';
-      pos.textContent = BOX_POS[bi] || '';
+      pos.textContent = 'תיבה ' + (bi + 1);
       var titleField = document.createElement('div');
       titleField.className = 'box-editor__title';
       var titleInput = document.createElement('input');
@@ -341,8 +367,21 @@
         box.title = titleInput.value; renderBoard(); save();
       });
       titleField.appendChild(titleInput);
+      var removeBox = document.createElement('button');
+      removeBox.type = 'button';
+      removeBox.className = 'box-remove';
+      removeBox.title = 'הסר תיבה';
+      removeBox.textContent = '🗑';
+      removeBox.disabled = state.boxes.length <= 1; // keep at least one box
+      removeBox.addEventListener('click', function () {
+        if (state.boxes.length <= 1) return;
+        if (!confirm('להסיר את התיבה "' + (box.title || 'ללא כותרת') + '"?')) return;
+        state.boxes.splice(bi, 1);
+        renderBoxesForm(); renderBoard(); save();
+      });
       head.appendChild(pos);
       head.appendChild(titleField);
+      head.appendChild(removeBox);
       wrap.appendChild(head);
 
       var rowsWrap = document.createElement('div');
@@ -430,6 +469,7 @@
     els.sub.value = state.subHeadline || '';
     els.sideTitle.value = state.sidebar.title || '';
     if (els.shabbatDate) els.shabbatDate.value = state.shabbatDate || '';
+    if (els.boxesPerRow) els.boxesPerRow.value = String(state.boxesPerRow || 2);
     renderThemes();
     applyTheme(state.theme);
     renderBoxesForm();
@@ -503,12 +543,17 @@
       return;
     }
     if (res.parsha) state.subHeadline = res.parsha;
-    // The first box is the Shabbat candle-lighting box — fill it with computed times.
-    state.boxes[0].rows = [
-      { time: res.jerusalem, label: 'כניסת שבת (ירושלים):' },
-      { time: res.telaviv, label: 'כניסת שבת (תל אביב):' },
-      { time: res.havdalah, label: 'צאת שבת:' }
-    ];
+    // Fill the Shabbat candle-lighting box (marked with box.shabbat), falling back to the first box.
+    var bi = -1;
+    for (var i = 0; i < state.boxes.length; i++) { if (state.boxes[i].shabbat) { bi = i; break; } }
+    if (bi < 0 && state.boxes.length) bi = 0;
+    if (bi >= 0) {
+      state.boxes[bi].rows = [
+        { time: res.jerusalem, label: 'כניסת שבת (ירושלים):' },
+        { time: res.telaviv, label: 'כניסת שבת (תל אביב):' },
+        { time: res.havdalah, label: 'צאת שבת:' }
+      ];
+    }
     syncFormFromState();
     renderBoard();
     save();
@@ -612,6 +657,16 @@
       renderSideImagePreview(); renderBoard(); save();
     });
 
+    // Boxes: per-row count + add box
+    els.boxesPerRow.addEventListener('change', function () {
+      state.boxesPerRow = Math.max(1, Math.min(4, parseInt(els.boxesPerRow.value, 10) || 2));
+      renderBoard(); save();
+    });
+    $('btnAddBox').addEventListener('click', function () {
+      state.boxes.push({ title: '', rows: [{ time: '', label: '' }] });
+      renderBoxesForm(); renderBoard(); save();
+    });
+
     // Shabbat / Hebcal controls
     els.shabbatDate.addEventListener('change', function () {
       state.shabbatDate = els.shabbatDate.value || state.shabbatDate;
@@ -636,10 +691,11 @@
       if (!confirm('לנקות את כל השדות?')) return;
       state = {
         theme: state.theme,
+        boxesPerRow: state.boxesPerRow || 2,
         mainHeadline: '', subHeadline: '',
         shabbatDate: toISO(upcomingSaturday()),
         boxes: [
-          { title: '', rows: [{ time: '', label: '' }] },
+          { title: '', shabbat: true, rows: [{ time: '', label: '' }] },
           { title: '', rows: [{ time: '', label: '' }] },
           { title: '', rows: [{ time: '', label: '' }] },
           { title: '', rows: [{ time: '', label: '' }] }
@@ -664,7 +720,7 @@
     // Re-fit the sidebar text once the web fonts have actually loaded,
     // since final glyph metrics change the measured height.
     if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(fitSidebarText);
+      document.fonts.ready.then(function () { fitSidebarText(); fitBoxes(); });
     }
 
     // On a first visit (nothing saved yet), auto-fill parsha + Shabbat times.

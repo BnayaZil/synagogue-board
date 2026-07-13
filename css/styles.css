@@ -165,6 +165,21 @@ input[type="text"]:focus, textarea:focus {
 }
 .box-editor__title { flex: 1; }
 .box-editor__title input { font-weight: 500; }
+.box-remove {
+  flex: 0 0 auto; border: none; background: transparent; color: var(--muted);
+  font-size: 18px; cursor: pointer; line-height: 1; padding: 4px 7px; border-radius: 6px;
+}
+.box-remove:hover { color: var(--danger); background: #fbeceb; }
+.box-remove:disabled { opacity: .35; cursor: default; }
+
+.card__head--row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.inline-field { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.inline-field span { font-size: 13px; color: #374151; }
+.inline-field select {
+  font-family: 'Heebo', sans-serif; font-size: 14px; padding: 6px 10px;
+  border: 1px solid #d4d8de; border-radius: 8px; background: #fff; color: var(--text);
+}
+.row-add--block { align-self: stretch; width: 100%; text-align: center; margin-top: 2px; }
 
 .rows { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
 .row-editor { display: flex; gap: 8px; align-items: center; }
@@ -287,24 +302,30 @@ input[type="date"]:focus { outline: none; border-color: var(--accent); box-shado
 .board__grid {
   flex: 1 1 auto;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-auto-rows: 1fr;
-  column-gap: 60px;
-  row-gap: 30px;
+  /* column count is set inline from state.boxesPerRow (default 2) */
+  grid-template-columns: repeat(2, 1fr);
+  grid-auto-rows: minmax(0, 1fr);   /* equal rows that never exceed their share -> clip, never overlap */
+  column-gap: 56px;
+  row-gap: 28px;
+  min-height: 0;
 }
-.board__box { display: flex; flex-direction: column; padding-top: 14px; border-top: 2px solid var(--board-line); }
+.board__box {
+  display: flex; flex-direction: column; padding-top: 14px;
+  border-top: 2px solid var(--board-line);
+  min-height: 0; overflow: hidden;   /* keeps a too-full box from spilling onto its neighbours */
+  /* box content is em-based off this size; JS lowers --box-scale so all boxes fit the canvas */
+  font-size: calc(30px * var(--box-scale, 1));
+}
 .board__box-title {
   font-family: 'Rubik'; font-weight: 700; color: var(--teal);
-  font-size: 40px; line-height: 1.1; margin: 0 0 16px; text-align: right;
+  font-size: calc(40px * var(--box-scale, 1)); line-height: 1.1; margin: 0 0 0.4em; text-align: right;
 }
-.board__rows { display: flex; flex-direction: column; gap: 9px; }
-.board__row { display: flex; align-items: baseline; gap: 14px; font-size: 30px; }
+.board__rows { display: flex; flex-direction: column; gap: 0.3em; }
+.board__row { display: flex; align-items: baseline; gap: 0.47em; font-size: 1em; }
 .board__row-label { flex: 1 1 auto; text-align: right; }
 .board__row-time { flex: 0 0 auto; text-align: left; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.board__row--note {
-  justify-content: center; text-align: center; font-weight: 700;
-}
-.board__row--note .board__row-label { flex: 0 0 auto; text-align: center; }
+.board__row--note { justify-content: center; text-align: center; font-weight: 700; }
+.board__row--note .board__row-label { flex: 0 1 auto; min-width: 0; text-align: center; }
 
 /* sidebar */
 .board__side-image {

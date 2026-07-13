@@ -8,7 +8,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%95%8E%3C/text%3E%3C/svg%3E" />
   <link rel="stylesheet" href="assets/fonts.css" />
   <link rel="stylesheet" href="vendor/quill.snow.css" />
-  <link rel="stylesheet" href="css/styles.css?v=12themes" />
+  <link rel="stylesheet" href="css/styles.css?v=boxes" />
 </head>
 <body>
   <header class="app-bar">
@@ -68,11 +68,23 @@
         </fieldset>
 
         <div class="card">
-          <div class="card__head">
-            <h2>ארבע התיבות</h2>
-            <p class="card__hint">כל תיבה: כותרת + שורות (שעה וכותרת זו לצד זו). שורה ללא שעה מוצגת כהערה ממורכזת.</p>
+          <div class="card__head card__head--row">
+            <div>
+              <h2>התיבות</h2>
+              <p class="card__hint">הוסיפו/הסירו תיבות ושורות. התיבות מתמלאות מימין לשמאל, ואז לשורה הבאה.</p>
+            </div>
+            <label class="inline-field">
+              <span>תיבות בשורה</span>
+              <select id="boxesPerRow">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+              </select>
+            </label>
           </div>
           <div id="boxes"></div>
+          <button type="button" class="row-add row-add--block" id="btnAddBox">＋ הוסף תיבה</button>
         </div>
 
         <fieldset class="card">
@@ -141,6 +153,6 @@
   <script src="vendor/hebcal.bundle.min.js"></script>
   <script src="vendor/quill.js"></script>
   <script src="vendor/html2canvas.min.js"></script>
-  <script src="js/app.js?v=12themes"></script>
+  <script src="js/app.js?v=boxes"></script>
 </body>
 </html>
