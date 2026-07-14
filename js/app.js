@@ -153,9 +153,7 @@
   }
 
   /* ---------- State ---------- */
-  var loadedState = load();
-  var freshLoad = !loadedState;
-  var state = loadedState || defaultState();
+  var state = load() || defaultState();
   if (!state.shabbatDate) state.shabbatDate = toISO(upcomingSaturday()); // migrate older saved state
   if (!state.theme) state.theme = 'classic';
   if (!state.boxesPerRow) state.boxesPerRow = 2;
@@ -163,11 +161,13 @@
   if (Array.isArray(state.boxes) && state.boxes.length && !state.boxes.some(function (b) { return b.shabbat; })) {
     state.boxes[0].shabbat = true; // keep Hebcal targeting the first box for older saved state
   }
-  // One-time refresh of the (auto-computed) Shabbat box when its definition changes
-  // (e.g. Tel Aviv -> Petah Tikva). Keeps title/sidebar/other boxes untouched.
-  var SHABBAT_VER = 3;
-  var needShabbatRefresh = state.shabbatVer !== SHABBAT_VER;
-  state.shabbatVer = SHABBAT_VER;
+  // Auto-advance to the upcoming Shabbat: if the saved date has already passed,
+  // move it forward. A manually-chosen FUTURE date is kept (for preparing ahead).
+  // applyShabbat() is then always run on init, so the parsha + Shabbat-times box
+  // reflect the current week — the rest of the board (title/address/sidebar/other
+  // boxes/weekday times) is left untouched.
+  var upcomingISO = toISO(upcomingSaturday());
+  if (!state.shabbatDate || state.shabbatDate < upcomingISO) state.shabbatDate = upcomingISO;
   // Default sidebar image was renamed; point older saved state (that still used the
   // default) at the new file. Custom uploads (data: URLs) are left alone.
   if (state.sidebar && state.sidebar.image === 'assets/sample-building.jpg') {
@@ -750,9 +750,9 @@
       document.fonts.ready.then(function () { fitSidebarText(); fitBoxes(); });
     }
 
-    // On a first visit (nothing saved yet), auto-fill parsha + Shabbat times.
-    // Returning visitors keep exactly what they saved (their title & sidebar included),
-    // except a one-time refresh when the Shabbat-box definition changed (needShabbatRefresh).
-    if (freshLoad || needShabbatRefresh) applyShabbat();
+    // Always compute the parsha + Shabbat times for the (auto-advanced) date on open,
+    // so the board is current every visit. Only the sub-headline and Shabbat-times box
+    // are touched; everything else the user entered is preserved.
+    applyShabbat();
   });
 })();
