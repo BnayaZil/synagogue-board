@@ -140,7 +140,7 @@
         }
       ],
       sidebar: {
-        image: 'assets/synagogue.jpg',
+        image: 'assets/synagogue-photo.jpg',
         title: 'הפטרות ימי בין המצרים',
         html:
           '<p>„תלתא דפורענותא”<br>שלוש הפטרות העוסקות בפורענות שקוראים בשבתות שבין שבעה עשר בתמוז ותשעה באב</p>' +
@@ -168,10 +168,11 @@
   // boxes/weekday times) is left untouched.
   var upcomingISO = toISO(upcomingSaturday());
   if (!state.shabbatDate || state.shabbatDate < upcomingISO) state.shabbatDate = upcomingISO;
-  // Default sidebar image was renamed; point older saved state (that still used the
-  // default) at the new file. Custom uploads (data: URLs) are left alone.
-  if (state.sidebar && state.sidebar.image === 'assets/sample-building.jpg') {
-    state.sidebar.image = 'assets/synagogue.jpg';
+  // The default sidebar image was replaced over time; point older saved state (that
+  // still used a previous default) at the current file. Custom uploads (data: URLs) stay.
+  if (state.sidebar && (state.sidebar.image === 'assets/sample-building.jpg' ||
+      state.sidebar.image === 'assets/synagogue.jpg')) {
+    state.sidebar.image = 'assets/synagogue-photo.jpg';
   }
   var quill = null;
   var suppressQuill = false;
@@ -318,11 +319,15 @@
     // sidebar
     els.bSideImage.innerHTML = '';
     if (state.sidebar.image) {
+      els.bSideImage.style.height = ''; // reset to CSS default until we know the aspect
       var img = document.createElement('img');
-      img.src = state.sidebar.image;
       img.alt = '';
+      img.onload = function () { sizeSideImage(img); };
+      img.src = state.sidebar.image;
       els.bSideImage.appendChild(img);
+      if (img.complete && img.naturalWidth) sizeSideImage(img);
     } else {
+      els.bSideImage.style.height = '';
       els.bSideImage.textContent = 'תמונה';
     }
     els.bSideTitle.textContent = state.sidebar.title || '';
@@ -349,6 +354,18 @@
       scale -= 0.04;
       grid.style.setProperty('--box-scale', scale.toFixed(2));
     }
+  }
+
+  /* Size the sidebar image box to the image's own aspect ratio, so photos of any
+     shape (e.g. a wide panorama) show at correct proportions without distortion or a
+     heavy crop. Clamped so a very tall/wide image can't dominate or vanish. */
+  function sizeSideImage(img) {
+    var w = els.bSideImage.clientWidth || 396;
+    var ar = img.naturalWidth / img.naturalHeight;
+    if (!ar || !isFinite(ar)) return;
+    var h = Math.round(Math.min(280, Math.max(90, w / ar)));
+    els.bSideImage.style.height = h + 'px';
+    fitSidebarText(); // image height changed → re-fit the free text
   }
 
   /* Scale the sidebar free-text down until the whole sidebar column fits the
