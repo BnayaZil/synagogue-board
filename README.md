@@ -52,7 +52,7 @@ css/styles.css      # app chrome + the pixel-accurate 1600×900 board
 js/app.js           # state model, live render, auto-fit, PNG export
 assets/fonts.css    # @font-face for the self-hosted fonts
 assets/fonts/*.woff2 # Heebo + Rubik (Hebrew + Latin subsets)
-assets/sample-building.jpg  # default placeholder image
+assets/synagogue.jpg # default sidebar image (Kfar Ganim B synagogue)
 vendor/quill.*      # rich-text editor
 vendor/html2canvas.min.js   # DOM → canvas for the PNG export
 vendor/hebcal.bundle.min.js # @hebcal/core — parsha + Shabbat times (GPLv2)

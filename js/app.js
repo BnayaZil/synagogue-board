@@ -133,7 +133,7 @@
         }
       ],
       sidebar: {
-        image: 'assets/sample-building.jpg',
+        image: 'assets/synagogue.jpg',
         title: 'הפטרות ימי בין המצרים',
         html:
           '<p>„תלתא דפורענותא”<br>שלוש הפטרות העוסקות בפורענות שקוראים בשבתות שבין שבעה עשר בתמוז ותשעה באב</p>' +
@@ -160,6 +160,11 @@
   var SHABBAT_VER = 2;
   var needShabbatRefresh = state.shabbatVer !== SHABBAT_VER;
   state.shabbatVer = SHABBAT_VER;
+  // Default sidebar image was renamed; point older saved state (that still used the
+  // default) at the new file. Custom uploads (data: URLs) are left alone.
+  if (state.sidebar && state.sidebar.image === 'assets/sample-building.jpg') {
+    state.sidebar.image = 'assets/synagogue.jpg';
+  }
   var quill = null;
   var suppressQuill = false;
 
