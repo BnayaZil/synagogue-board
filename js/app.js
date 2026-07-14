@@ -6,7 +6,7 @@
   'use strict';
 
   var STORAGE_KEY = 'synaboard.v2';
-  var DEFAULT_IMAGE = 'assets/synagogue-photo.jpg';
+  var DEFAULT_IMAGE = 'assets/synagogue-render.jpg';
 
   /* ---------- Theme presets (each overrides the board's CSS variables) ---------- */
   var THEMES = [
@@ -172,7 +172,8 @@
   // The default sidebar image was replaced over time; point older saved state (that
   // still used a previous default) at the current file. Custom uploads (data: URLs) stay.
   if (state.sidebar && (state.sidebar.image === 'assets/sample-building.jpg' ||
-      state.sidebar.image === 'assets/synagogue.jpg')) {
+      state.sidebar.image === 'assets/synagogue.jpg' ||
+      state.sidebar.image === 'assets/synagogue-photo.jpg')) {
     state.sidebar.image = DEFAULT_IMAGE;
   }
   var quill = null;
