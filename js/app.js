@@ -45,19 +45,22 @@
   function hebcalAvailable() {
     return typeof window.hebcal !== 'undefined' && window.hebcal.HebrewCalendar;
   }
-  // Returns { parsha, jerusalem, petahTikva, havdalah } for the Shabbat on saturdayISO, or null.
+  // Returns { parsha, jerusalem, petahTikva, petahTikva40, havdalah } for the Shabbat, or null.
   function computeShabbat(saturdayISO) {
     if (!hebcalAvailable()) return null;
     var H = window.hebcal;
     var sat = parseISO(saturdayISO);
     var fri = new Date(sat.getFullYear(), sat.getMonth(), sat.getDate() - 1);
 
+    // NOTE: candleLightingMins must be passed as a CalOptions field — setting it on the
+    // Location object is ignored. (Built-in cities like Jerusalem carry their own 40-min custom.)
     function cityTimes(loc, mins) {
       if (!loc) return {};
-      loc.candleLightingMins = mins;
       var out = {};
       try {
-        var evs = H.HebrewCalendar.calendar({ start: fri, end: sat, location: loc, candlelighting: true, il: true });
+        var evs = H.HebrewCalendar.calendar({
+          start: fri, end: sat, location: loc, candlelighting: true, candleLightingMins: mins, il: true
+        });
         evs.forEach(function (ev) {
           var d = ev.getDesc();
           if (d === 'Candle lighting') out.candle = ev.fmtTime;
@@ -72,7 +75,8 @@
     var petahTikvaLoc = new H.Location(32.0870, 34.8875, true, 'Asia/Jerusalem', 'פתח תקווה', 'IL');
 
     var jer = cityTimes(lookup('Jerusalem'), 40);
-    var pt = cityTimes(petahTikvaLoc, 18);
+    var pt = cityTimes(petahTikvaLoc, 18);      // Petah Tikva standard (18 min)
+    var pt40 = cityTimes(petahTikvaLoc, 40);    // Petah Tikva, Jerusalem custom (40 min before sunset)
 
     var parsha = null;
     try {
@@ -86,6 +90,7 @@
       parsha: parsha,
       jerusalem: jer.candle || '',
       petahTikva: pt.candle || '',
+      petahTikva40: pt40.candle || '',
       havdalah: pt.havdalah || jer.havdalah || ''
     };
   }
@@ -105,6 +110,7 @@
           rows: [
             { time: '19:10', label: 'כניסת שבת (ירושלים):' },
             { time: '19:29', label: 'כניסת שבת (פתח תקווה):' },
+            { time: '19:07', label: 'כניסת שבת (פתח תקווה, מנהג ירושלים):' },
             { time: '20:28', label: 'צאת שבת (פתח תקווה):' }
           ]
         },
@@ -157,7 +163,7 @@
   }
   // One-time refresh of the (auto-computed) Shabbat box when its definition changes
   // (e.g. Tel Aviv -> Petah Tikva). Keeps title/sidebar/other boxes untouched.
-  var SHABBAT_VER = 2;
+  var SHABBAT_VER = 3;
   var needShabbatRefresh = state.shabbatVer !== SHABBAT_VER;
   state.shabbatVer = SHABBAT_VER;
   // Default sidebar image was renamed; point older saved state (that still used the
@@ -563,6 +569,7 @@
       state.boxes[bi].rows = [
         { time: res.jerusalem, label: 'כניסת שבת (ירושלים):' },
         { time: res.petahTikva, label: 'כניסת שבת (פתח תקווה):' },
+        { time: res.petahTikva40, label: 'כניסת שבת (פתח תקווה, מנהג ירושלים):' },
         { time: res.havdalah, label: 'צאת שבת (פתח תקווה):' }
       ];
     }
@@ -571,7 +578,7 @@
     save();
     if (els.shabbatStatus) {
       els.shabbatStatus.textContent = '✓ ' + (res.parsha || 'ללא פרשה קבועה') +
-        ' · כניסת שבת: י‑ם ' + (res.jerusalem || '—') + ', פ״ת ' + (res.petahTikva || '—') +
+        ' · כניסת שבת פ״ת: ' + (res.petahTikva || '—') + ' (מנהג י‑ם ' + (res.petahTikva40 || '—') + ')' +
         ' · צאת שבת ' + (res.havdalah || '—');
     }
   }
