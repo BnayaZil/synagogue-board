@@ -101,6 +101,7 @@
       theme: 'classic',
       boxesPerRow: 2,
       mainHeadline: 'בית כנסת כפר גנים ב',
+      address: 'כפר גנים ב׳, פתח תקווה',
       subHeadline: 'פרשת פנחס',
       shabbatDate: toISO(upcomingSaturday()),
       boxes: [
@@ -158,6 +159,7 @@
   if (!state.shabbatDate) state.shabbatDate = toISO(upcomingSaturday()); // migrate older saved state
   if (!state.theme) state.theme = 'classic';
   if (!state.boxesPerRow) state.boxesPerRow = 2;
+  if (state.address === undefined) state.address = 'כפר גנים ב׳, פתח תקווה';
   if (Array.isArray(state.boxes) && state.boxes.length && !state.boxes.some(function (b) { return b.shabbat; })) {
     state.boxes[0].shabbat = true; // keep Hebcal targeting the first box for older saved state
   }
@@ -210,6 +212,7 @@
   var els = {
     themes: $('themes'),
     main: $('mainHeadline'),
+    address: $('address'),
     sub: $('subHeadline'),
     boxes: $('boxes'),
     boxesPerRow: $('boxesPerRow'),
@@ -221,6 +224,7 @@
     shabbatStatus: $('shabbatStatus'),
     // board
     bMain: $('b-main'),
+    bAddress: $('b-address'),
     bSub: $('b-sub'),
     bGrid: $('b-grid'),
     bSideImage: $('b-side-image'),
@@ -270,6 +274,8 @@
      ============================================================ */
   function renderBoard() {
     els.bMain.textContent = state.mainHeadline || '';
+    els.bAddress.textContent = state.address || '';
+    els.bAddress.style.display = (state.address && state.address.trim()) ? '' : 'none';
     els.bSub.textContent = state.subHeadline || '';
 
     // boxes
@@ -484,6 +490,7 @@
 
   function syncFormFromState() {
     els.main.value = state.mainHeadline || '';
+    els.address.value = state.address || '';
     els.sub.value = state.subHeadline || '';
     els.sideTitle.value = state.sidebar.title || '';
     if (els.shabbatDate) els.shabbatDate.value = state.shabbatDate || '';
@@ -664,6 +671,7 @@
      ============================================================ */
   function bindStaticFields() {
     els.main.addEventListener('input', function () { state.mainHeadline = els.main.value; renderBoard(); save(); });
+    els.address.addEventListener('input', function () { state.address = els.address.value; renderBoard(); save(); });
     els.sub.addEventListener('input', function () { state.subHeadline = els.sub.value; renderBoard(); save(); });
     els.sideTitle.addEventListener('input', function () { state.sidebar.title = els.sideTitle.value; renderBoard(); save(); });
 
@@ -711,7 +719,7 @@
       state = {
         theme: state.theme,
         boxesPerRow: state.boxesPerRow || 2,
-        mainHeadline: '', subHeadline: '',
+        mainHeadline: '', address: '', subHeadline: '',
         shabbatDate: toISO(upcomingSaturday()),
         boxes: [
           { title: '', shabbat: true, rows: [{ time: '', label: '' }] },

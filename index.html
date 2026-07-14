@@ -8,7 +8,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%95%8E%3C/text%3E%3C/svg%3E" />
   <link rel="stylesheet" href="assets/fonts.css" />
   <link rel="stylesheet" href="vendor/quill.snow.css" />
-  <link rel="stylesheet" href="css/styles.css?v=pt40" />
+  <link rel="stylesheet" href="css/styles.css?v=address" />
 </head>
 <body>
   <header class="app-bar">
@@ -49,7 +49,11 @@
             <input type="text" id="mainHeadline" placeholder="למשל: בית כנסת היכל גבריאל" />
           </label>
           <label class="field">
-            <span class="field__label">כותרת משנה</span>
+            <span class="field__label">כתובת</span>
+            <input type="text" id="address" placeholder="למשל: רחוב הרצל 5, כפר גנים ב׳, פתח תקווה" />
+          </label>
+          <label class="field">
+            <span class="field__label">כותרת משנה (פרשה)</span>
             <input type="text" id="subHeadline" placeholder="למשל: פרשת פנחס" />
           </label>
         </fieldset>
@@ -134,6 +138,7 @@
             <div class="board__main">
               <header class="board__header">
                 <h1 class="board__title" id="b-main"></h1>
+                <p class="board__address" id="b-address"></p>
                 <p class="board__subtitle" id="b-sub"></p>
               </header>
               <div class="board__grid" id="b-grid"></div>
@@ -153,6 +158,6 @@
   <script src="vendor/hebcal.bundle.min.js"></script>
   <script src="vendor/quill.js"></script>
   <script src="vendor/html2canvas.min.js"></script>
-  <script src="js/app.js?v=pt40"></script>
+  <script src="js/app.js?v=address"></script>
 </body>
 </html>

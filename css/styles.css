@@ -293,6 +293,10 @@ input[type="date"]:focus { outline: none; border-color: var(--accent); box-shado
   font-family: 'Rubik'; font-weight: 700; color: var(--teal);
   font-size: 82px; line-height: 1.02; margin: 0; letter-spacing: -0.5px;
 }
+.board__address {
+  font-family: 'Heebo'; font-weight: 500; color: var(--board-ink);
+  font-size: 28px; line-height: 1.2; margin: 12px 0 0; opacity: .78;
+}
 .board__subtitle {
   font-family: 'Rubik'; font-weight: 500; color: var(--teal-soft);
   font-size: 46px; line-height: 1.1; margin: 6px 0 0;
