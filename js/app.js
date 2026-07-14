@@ -6,6 +6,7 @@
   'use strict';
 
   var STORAGE_KEY = 'synaboard.v2';
+  var DEFAULT_IMAGE = 'assets/synagogue-photo.jpg';
 
   /* ---------- Theme presets (each overrides the board's CSS variables) ---------- */
   var THEMES = [
@@ -140,7 +141,7 @@
         }
       ],
       sidebar: {
-        image: 'assets/synagogue-photo.jpg',
+        image: DEFAULT_IMAGE,
         title: 'הפטרות ימי בין המצרים',
         html:
           '<p>„תלתא דפורענותא”<br>שלוש הפטרות העוסקות בפורענות שקוראים בשבתות שבין שבעה עשר בתמוז ותשעה באב</p>' +
@@ -172,7 +173,7 @@
   // still used a previous default) at the current file. Custom uploads (data: URLs) stay.
   if (state.sidebar && (state.sidebar.image === 'assets/sample-building.jpg' ||
       state.sidebar.image === 'assets/synagogue.jpg')) {
-    state.sidebar.image = 'assets/synagogue-photo.jpg';
+    state.sidebar.image = DEFAULT_IMAGE;
   }
   var quill = null;
   var suppressQuill = false;
@@ -221,6 +222,7 @@
     sideImageInput: $('sideImageInput'),
     sideImagePreview: $('sideImagePreview'),
     sideImageRemove: $('sideImageRemove'),
+    sideImageReset: $('sideImageReset'),
     shabbatDate: $('shabbatDate'),
     shabbatStatus: $('shabbatStatus'),
     // board
@@ -698,6 +700,11 @@
     });
     els.sideImageRemove.addEventListener('click', function () {
       state.sidebar.image = null;
+      renderSideImagePreview(); renderBoard(); save();
+    });
+    els.sideImageReset.addEventListener('click', function () {
+      // Flush any custom/uploaded image and fall back to the default synagogue photo.
+      state.sidebar.image = DEFAULT_IMAGE;
       renderSideImagePreview(); renderBoard(); save();
     });
 
