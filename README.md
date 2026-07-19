@@ -7,11 +7,12 @@ click **הורדת תמונה (PNG)** to export a print-ready 3200×1800 image.
 ## Features
 
 - **Live preview** — every edit re-renders the board instantly.
-- **Theme presets** — twelve ready-made looks (קלאסי / לילה / זהב מלכותי / תכלת / זית /
-  בורדו / חול מדבר / פחם וזהב / סגול מלכותי / אזמרגד / ורוד עתיק / אינדיגו), a mix of
-  light and dark. The chosen theme is saved and applied to the exported PNG as well.
-  Themes are driven by CSS variables on the board, so adding a new preset is one entry
-  in `THEMES`.
+- **Theme presets** — eighteen ready-made looks: a mix of light and dark
+  (קלאסי / לילה / זהב מלכותי / תכלת / זית / בורדו / חול מדבר / פחם וזהב / סגול מלכותי /
+  אזמרגד / ורוד עתיק / אינדיגו) plus six white-background accents (לבן · כחול / ירוק /
+  אדום / סגול / כתום / טורקיז). The chosen theme is saved and applied to the exported
+  PNG as well. Themes are driven by CSS variables on the board, so adding a new preset
+  is one entry in `THEMES`.
 - **Full structure of the reference layout:**
   - Main headline + sub-headline
   - Four boxes, each with a title and any number of *time + label* rows

@@ -21,7 +21,14 @@
     { id: 'plum',     name: 'סגול מלכותי', vars: { '--board-bg': '#f4f1f7', '--teal': '#6b4a86', '--teal-soft': '#8a6ba3', '--board-ink': '#241f2b', '--board-line': '#d0c4dd', '--board-img-bg': '#e2d8ec' } },
     { id: 'emerald',  name: 'אזמרגד',      vars: { '--board-bg': '#16302e', '--teal': '#7fc3a8', '--teal-soft': '#9fceb8', '--board-ink': '#eaf3ee', '--board-line': '#2f4a45', '--board-img-bg': '#22403c' } },
     { id: 'rose',     name: 'ורוד עתיק',   vars: { '--board-bg': '#f7eeee', '--teal': '#a75c6a', '--teal-soft': '#c07f8a', '--board-ink': '#2c2122', '--board-line': '#e0c6ca', '--board-img-bg': '#edd8dc' } },
-    { id: 'indigo',   name: 'אינדיגו',     vars: { '--board-bg': '#eef0f6', '--teal': '#3b4b8c', '--teal-soft': '#6570ab', '--board-ink': '#1e2130', '--board-line': '#c3c9de', '--board-img-bg': '#d9deec' } }
+    { id: 'indigo',   name: 'אינדיגו',     vars: { '--board-bg': '#eef0f6', '--teal': '#3b4b8c', '--teal-soft': '#6570ab', '--board-ink': '#1e2130', '--board-line': '#c3c9de', '--board-img-bg': '#d9deec' } },
+    // White-background presets
+    { id: 'white-blue',    name: 'לבן · כחול',   vars: { '--board-bg': '#ffffff', '--teal': '#1f6fb2', '--teal-soft': '#5b95c9', '--board-ink': '#1c2530', '--board-line': '#d8e2ee', '--board-img-bg': '#eef3f9' } },
+    { id: 'white-green',   name: 'לבן · ירוק',   vars: { '--board-bg': '#ffffff', '--teal': '#2e7d5b', '--teal-soft': '#5aa383', '--board-ink': '#16251e', '--board-line': '#d4e6dc', '--board-img-bg': '#eaf5ef' } },
+    { id: 'white-crimson', name: 'לבן · אדום',   vars: { '--board-bg': '#ffffff', '--teal': '#b23a48', '--teal-soft': '#cc6a75', '--board-ink': '#2a1c1e', '--board-line': '#f0d7da', '--board-img-bg': '#f8eaec' } },
+    { id: 'white-violet',  name: 'לבן · סגול',   vars: { '--board-bg': '#ffffff', '--teal': '#6a3fa0', '--teal-soft': '#9270bd', '--board-ink': '#221b2b', '--board-line': '#e5ddf1', '--board-img-bg': '#f1eaf9' } },
+    { id: 'white-amber',   name: 'לבן · כתום',   vars: { '--board-bg': '#ffffff', '--teal': '#c9701f', '--teal-soft': '#dc9450', '--board-ink': '#2a2018', '--board-line': '#f2e1cd', '--board-img-bg': '#faf0e1' } },
+    { id: 'white-cyan',    name: 'לבן · טורקיז', vars: { '--board-bg': '#ffffff', '--teal': '#0e7c86', '--teal-soft': '#4aa4ac', '--board-ink': '#10262a', '--board-line': '#cfe6e8', '--board-img-bg': '#e8f5f6' } }
   ];
   function themeById(id) {
     for (var i = 0; i < THEMES.length; i++) if (THEMES[i].id === id) return THEMES[i];
