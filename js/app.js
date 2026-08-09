@@ -7,6 +7,15 @@
 
   var STORAGE_KEY = 'synaboard.v2';
   var DEFAULT_IMAGE = 'assets/synagogue-render.jpg';
+  // Editable palette roles (map to the board's CSS variables).
+  var PALETTE_ROLES = [
+    { key: '--board-bg', label: 'רקע' },
+    { key: '--teal', label: 'כותרות' },
+    { key: '--teal-soft', label: 'כותרת משנה' },
+    { key: '--board-ink', label: 'טקסט' },
+    { key: '--board-line', label: 'קווים' },
+    { key: '--board-img-bg', label: 'רקע תמונה' }
+  ];
 
   /* ---------- Theme presets (each overrides the board's CSS variables) ---------- */
   var THEMES = [
@@ -28,7 +37,20 @@
     { id: 'white-crimson', name: 'לבן · אדום',   vars: { '--board-bg': '#ffffff', '--teal': '#b23a48', '--teal-soft': '#cc6a75', '--board-ink': '#2a1c1e', '--board-line': '#f0d7da', '--board-img-bg': '#f8eaec' } },
     { id: 'white-violet',  name: 'לבן · סגול',   vars: { '--board-bg': '#ffffff', '--teal': '#6a3fa0', '--teal-soft': '#9270bd', '--board-ink': '#221b2b', '--board-line': '#e5ddf1', '--board-img-bg': '#f1eaf9' } },
     { id: 'white-amber',   name: 'לבן · כתום',   vars: { '--board-bg': '#ffffff', '--teal': '#c9701f', '--teal-soft': '#dc9450', '--board-ink': '#2a2018', '--board-line': '#f2e1cd', '--board-img-bg': '#faf0e1' } },
-    { id: 'white-cyan',    name: 'לבן · טורקיז', vars: { '--board-bg': '#ffffff', '--teal': '#0e7c86', '--teal-soft': '#4aa4ac', '--board-ink': '#10262a', '--board-line': '#cfe6e8', '--board-img-bg': '#e8f5f6' } }
+    { id: 'white-cyan',    name: 'לבן · טורקיז', vars: { '--board-bg': '#ffffff', '--teal': '#0e7c86', '--teal-soft': '#4aa4ac', '--board-ink': '#10262a', '--board-line': '#cfe6e8', '--board-img-bg': '#e8f5f6' } },
+    // White background with a darker, deeper accent scheme
+    { id: 'wd-navy',     name: 'לבן · נייבי',       vars: { '--board-bg': '#ffffff', '--teal': '#16305e', '--teal-soft': '#3f5f8f', '--board-ink': '#151d29', '--board-line': '#d7dfea', '--board-img-bg': '#eef2f8' } },
+    { id: 'wd-petrol',   name: 'לבן · פטרול',       vars: { '--board-bg': '#ffffff', '--teal': '#0e4a52', '--teal-soft': '#3a747c', '--board-ink': '#122023', '--board-line': '#d3e1e2', '--board-img-bg': '#eaf4f4' } },
+    { id: 'wd-forest',   name: 'לבן · יער',         vars: { '--board-bg': '#ffffff', '--teal': '#1e4d33', '--teal-soft': '#48795c', '--board-ink': '#14231b', '--board-line': '#d6e5db', '--board-img-bg': '#ecf5f0' } },
+    { id: 'wd-olive',    name: 'לבן · זית כהה',     vars: { '--board-bg': '#ffffff', '--teal': '#4a4d18', '--teal-soft': '#797d43', '--board-ink': '#20220f', '--board-line': '#e3e5cf', '--board-img-bg': '#f3f4e6' } },
+    { id: 'wd-espresso', name: 'לבן · אספרסו',      vars: { '--board-bg': '#ffffff', '--teal': '#4a2f1c', '--teal-soft': '#7c5a3c', '--board-ink': '#231a12', '--board-line': '#e7ded3', '--board-img-bg': '#f6f0e8' } },
+    { id: 'wd-maroon',   name: 'לבן · בורדו כהה',   vars: { '--board-bg': '#ffffff', '--teal': '#6e1f2a', '--teal-soft': '#9a4a53', '--board-ink': '#271518', '--board-line': '#eed7da', '--board-img-bg': '#f8ecee' } },
+    { id: 'wd-wine',     name: 'לבן · יין',         vars: { '--board-bg': '#ffffff', '--teal': '#4a1626', '--teal-soft': '#7d4051', '--board-ink': '#221016', '--board-line': '#ecd5db', '--board-img-bg': '#f7eaef' } },
+    { id: 'wd-plum',     name: 'לבן · שזיף כהה',    vars: { '--board-bg': '#ffffff', '--teal': '#5a1f4d', '--teal-soft': '#894e79', '--board-ink': '#241320', '--board-line': '#ecd8e6', '--board-img-bg': '#f7edf4' } },
+    { id: 'wd-purple',   name: 'לבן · סגול כהה',    vars: { '--board-bg': '#ffffff', '--teal': '#3f2170', '--teal-soft': '#6a4a9c', '--board-ink': '#1e162d', '--board-line': '#e1d9ef', '--board-img-bg': '#f1ebf9' } },
+    { id: 'wd-indigo',   name: 'לבן · אינדיגו כהה', vars: { '--board-bg': '#ffffff', '--teal': '#24215e', '--teal-soft': '#4c4a8b', '--board-ink': '#171528', '--board-line': '#dcdbef', '--board-img-bg': '#eeedf9' } },
+    { id: 'wd-slate',    name: 'לבן · פלדה',        vars: { '--board-bg': '#ffffff', '--teal': '#2f3a48', '--teal-soft': '#576475', '--board-ink': '#161c24', '--board-line': '#dbe0e6', '--board-img-bg': '#eef1f4' } },
+    { id: 'wd-charcoal', name: 'לבן · פחם',         vars: { '--board-bg': '#ffffff', '--teal': '#1f2730', '--teal-soft': '#49535f', '--board-ink': '#12171d', '--board-line': '#dadee3', '--board-img-bg': '#eef0f3' } }
   ];
   function themeById(id) {
     for (var i = 0; i < THEMES.length; i++) if (THEMES[i].id === id) return THEMES[i];
@@ -164,6 +186,8 @@
   var state = load() || defaultState();
   if (!state.shabbatDate) state.shabbatDate = toISO(upcomingSaturday()); // migrate older saved state
   if (!state.theme) state.theme = 'classic';
+  if (state.customTheme === undefined) state.customTheme = null;
+  if (state.theme === 'custom' && !state.customTheme) state.theme = 'classic';
   if (!state.boxesPerRow) state.boxesPerRow = 2;
   if (state.address === undefined) state.address = 'כפר גנים ב׳, פתח תקווה';
   if (Array.isArray(state.boxes) && state.boxes.length && !state.boxes.some(function (b) { return b.shabbat; })) {
@@ -221,6 +245,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var els = {
     themes: $('themes'),
+    palette: $('paletteEditor'),
     main: $('mainHeadline'),
     address: $('address'),
     sub: $('subHeadline'),
@@ -250,33 +275,69 @@
   /* ============================================================
      THEME
      ============================================================ */
+  // The palette actually applied for a theme id (custom uses the saved custom palette).
+  function effectiveVars(id) {
+    if (id === 'custom' && state.customTheme) return state.customTheme;
+    return themeById(id).vars;
+  }
   function applyTheme(id) {
-    var t = themeById(id);
-    var keys = Object.keys(t.vars);
-    for (var i = 0; i < keys.length; i++) els.board.style.setProperty(keys[i], t.vars[keys[i]]);
+    var vars = effectiveVars(id);
+    var keys = Object.keys(vars);
+    for (var i = 0; i < keys.length; i++) els.board.style.setProperty(keys[i], vars[keys[i]]);
+  }
+  function swatchButton(id, name, vars) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'theme-swatch' + (state.theme === id ? ' is-active' : '');
+    b.title = name;
+    b.innerHTML =
+      '<div class="theme-swatch__preview" style="background:' + vars['--board-bg'] + '">' +
+        '<div class="theme-swatch__stack">' +
+          '<span class="theme-swatch__bar" style="background:' + vars['--teal'] + '"></span>' +
+          '<span class="theme-swatch__bar theme-swatch__bar--sm" style="background:' + vars['--board-ink'] + '"></span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="theme-swatch__name">' + name + '</div>';
+    b.addEventListener('click', function () {
+      state.theme = id;
+      applyTheme(id);
+      renderThemes();
+      renderPalette();
+      save();
+    });
+    return b;
   }
   function renderThemes() {
     els.themes.innerHTML = '';
-    THEMES.forEach(function (t) {
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'theme-swatch' + (state.theme === t.id ? ' is-active' : '');
-      b.title = t.name;
-      b.innerHTML =
-        '<div class="theme-swatch__preview" style="background:' + t.vars['--board-bg'] + '">' +
-          '<div class="theme-swatch__stack">' +
-            '<span class="theme-swatch__bar" style="background:' + t.vars['--teal'] + '"></span>' +
-            '<span class="theme-swatch__bar theme-swatch__bar--sm" style="background:' + t.vars['--board-ink'] + '"></span>' +
-          '</div>' +
-        '</div>' +
-        '<div class="theme-swatch__name">' + t.name + '</div>';
-      b.addEventListener('click', function () {
-        state.theme = t.id;
-        applyTheme(t.id);
-        renderThemes();
+    if (state.customTheme) {
+      els.themes.appendChild(swatchButton('custom', 'מותאם אישית', state.customTheme));
+    }
+    THEMES.forEach(function (t) { els.themes.appendChild(swatchButton(t.id, t.name, t.vars)); });
+  }
+  // Six color pickers; editing one creates/updates a saved custom palette (localStorage).
+  function renderPalette() {
+    if (!els.palette) return;
+    var vars = effectiveVars(state.theme);
+    els.palette.innerHTML = '';
+    PALETTE_ROLES.forEach(function (role) {
+      var wrap = document.createElement('label');
+      wrap.className = 'palette-field';
+      var span = document.createElement('span');
+      span.textContent = role.label;
+      var input = document.createElement('input');
+      input.type = 'color';
+      input.value = vars[role.key] || '#000000';
+      input.addEventListener('input', function () {
+        if (!state.customTheme) state.customTheme = JSON.parse(JSON.stringify(effectiveVars(state.theme)));
+        state.customTheme[role.key] = input.value;
+        state.theme = 'custom';
+        applyTheme('custom');
+        renderThemes(); // refresh active highlight + custom swatch preview (keeps pickers as-is)
         save();
       });
-      els.themes.appendChild(b);
+      wrap.appendChild(span);
+      wrap.appendChild(input);
+      els.palette.appendChild(wrap);
     });
   }
 
@@ -523,6 +584,7 @@
     if (els.shabbatDate) els.shabbatDate.value = state.shabbatDate || '';
     if (els.boxesPerRow) els.boxesPerRow.value = String(state.boxesPerRow || 2);
     renderThemes();
+    renderPalette();
     applyTheme(state.theme);
     renderBoxesForm();
     renderSideImagePreview();
@@ -662,7 +724,7 @@
     (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve())
       .then(function () {
         return html2canvas(els.board, {
-          backgroundColor: themeById(state.theme).vars['--board-bg'],
+          backgroundColor: effectiveVars(state.theme)['--board-bg'],
           scale: 2,
           width: 1600,
           height: 900,
@@ -741,15 +803,17 @@
     $('btn-download').addEventListener('click', download);
     $('btn-example').addEventListener('click', function () {
       if (!confirm('לטעון את תוכן הדוגמה? הפעולה תחליף את מה שממולא כעת.')) return;
-      var keepTheme = state.theme;
+      var keepTheme = state.theme, keepCustom = state.customTheme;
       state = defaultState();
       state.theme = keepTheme;
+      state.customTheme = keepCustom;
       syncFormFromState(); renderBoard(); applyShabbat();
     });
     $('btn-clear').addEventListener('click', function () {
       if (!confirm('לנקות את כל השדות?')) return;
       state = {
         theme: state.theme,
+        customTheme: state.customTheme || null,
         boxesPerRow: state.boxesPerRow || 2,
         mainHeadline: '', address: '', subHeadline: '',
         shabbatDate: toISO(upcomingSaturday()),
