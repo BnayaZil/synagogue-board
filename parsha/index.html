@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>מחולל לוח שיעורי פרשת השבוע</title>
+  <meta name="description" content="מחולל מודעת שיעורים לפרשת השבוע – מלאו את הטופס וקבלו תמונה מוכנה להורדה" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%9C%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../assets/fonts.css" />
+  <link rel="stylesheet" href="../css/styles.css?v=parsha1" />
+  <link rel="stylesheet" href="../css/parsha.css?v=parsha1" />
+</head>
+<body class="page-parsha">
+  <header class="app-bar">
+    <div class="app-bar__title">
+      <span class="app-bar__logo">📜</span>
+      <div>
+        <h1>מחולל לוח שיעורי פרשה</h1>
+        <p>מלאו את פרטי השיעורים – המודעה מתעדכנת מיד. בסיום, הורידו כתמונה.</p>
+      </div>
+    </div>
+    <nav class="app-nav" aria-label="סוג לוח">
+      <a class="app-nav__link" href="../">לוח בית הכנסת</a>
+      <a class="app-nav__link is-active" href="./" aria-current="page">שיעורי פרשה</a>
+    </nav>
+    <div class="app-bar__actions">
+      <button id="btn-example" class="btn btn--ghost" type="button">טען דוגמה</button>
+      <button id="btn-clear" class="btn btn--ghost" type="button">נקה הכל</button>
+      <button id="btn-download" class="btn btn--primary" type="button">
+        <span class="btn__spinner" hidden></span>
+        <span class="btn__label">⬇ הורדת תמונה (PNG)</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- ===================== FORM PANEL ===================== -->
+    <section class="form-panel" aria-label="טופס עריכה">
+      <form id="editor" autocomplete="off">
+
+        <div class="card">
+          <div class="card__head">
+            <h2>ערכת נושא (עיצוב)</h2>
+            <p class="card__hint">בחרו מראה למודעה. הבחירה נשמרת ומיושמת גם בתמונה שמורידים.</p>
+          </div>
+          <div id="themes" class="theme-grid"></div>
+          <div class="palette-head">התאמת צבעים אישית</div>
+          <div id="paletteEditor" class="palette-editor"></div>
+        </div>
+
+        <fieldset class="card">
+          <legend>שבת — חישוב אוטומטי (Hebcal)</legend>
+          <label class="field">
+            <span class="field__label">תאריך השבת</span>
+            <input type="date" id="shabbatDate" dir="ltr" />
+          </label>
+          <div class="shabbat-actions">
+            <button type="button" class="btn btn--ghost btn--sm" id="btnUpcoming">השבת הקרובה</button>
+            <button type="button" class="btn btn--ghost btn--sm" id="btnRecalc">עדכן פרשה ותאריכים</button>
+          </div>
+          <p class="field__note" id="shabbatStatus">הפרשה והתאריכים (עברי ולועזי) של כל יום מחושבים אוטומטית לפי השבת שנבחרה.</p>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend>כותרות</legend>
+          <label class="field">
+            <span class="field__label">כותרת ראשית</span>
+            <input type="text" id="headline" placeholder="למשל: הרצאות מאת הרב…" />
+          </label>
+          <label class="field">
+            <span class="field__label">נושא (בסרט הכחול)</span>
+            <input type="text" id="topic" placeholder="למשל: הנושא: פרשת בראשית" />
+          </label>
+          <label class="check-field">
+            <input type="checkbox" id="autoTopic" />
+            <span>עדכן את הנושא אוטומטית לפי פרשת השבוע</span>
+          </label>
+          <label class="field">
+            <span class="field__label">שורת סיום (בסרט התחתון)</span>
+            <input type="text" id="footer" placeholder="למשל: ניתן להקדיש את השיעורים" />
+          </label>
+        </fieldset>
+
+        <div class="card">
+          <div class="card__head">
+            <h2>ימים ושיעורים</h2>
+            <p class="card__hint">כל יום הוא כותרת ומתחתיה רשימת שיעורים. יום שמקושר לימי השבוע מקבל כותרת ותאריך אוטומטיים.</p>
+          </div>
+          <div id="sections"></div>
+          <button type="button" class="row-add row-add--block" id="btnAddSection">＋ הוסף יום</button>
+        </div>
+
+        <p class="autosave-note" id="autosaveNote">השינויים נשמרים אוטומטית בדפדפן זה.</p>
+      </form>
+    </section>
+
+    <!-- ===================== PREVIEW PANEL ===================== -->
+    <section class="preview-panel" aria-label="תצוגה מקדימה">
+      <div class="preview-toolbar">
+        <span class="preview-toolbar__title">תצוגה מקדימה</span>
+        <span class="preview-toolbar__dim" dir="ltr">1000 × 1440</span>
+      </div>
+      <div class="preview-viewport" id="previewViewport">
+        <div class="board-sizer" id="boardSizer">
+        <div class="board-scale" id="boardScale">
+          <!-- The poster is rendered at its natural 1000×1440 size and exported as-is -->
+          <div id="poster" class="poster" dir="rtl">
+            <img class="poster__bg" id="p-bg" alt="" />
+            <div class="poster__inner">
+              <h1 class="poster__headline" id="p-headline"></h1>
+              <div class="ribbon ribbon--top" id="p-topic-wrap">
+                <img class="ribbon__shape" id="p-topic-shape" alt="" />
+                <span class="ribbon__text" id="p-topic"></span>
+              </div>
+              <img class="poster__ornament" id="p-orn-top" alt="" />
+              <div class="poster__content" id="p-content"></div>
+              <div class="ribbon ribbon--bottom" id="p-footer-wrap">
+                <img class="ribbon__shape" id="p-footer-shape" alt="" />
+                <span class="ribbon__text" id="p-footer"></span>
+              </div>
+              <img class="poster__ornament poster__ornament--bottom" id="p-orn-bottom" alt="" />
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="../vendor/hebcal.bundle.min.js"></script>
+  <script src="../vendor/html2canvas.min.js"></script>
+  <script src="../js/parsha.js?v=parsha1"></script>
+</body>
+</html>

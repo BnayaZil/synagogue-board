@@ -1,0 +1,222 @@
+/* ============================================================
+   Weekly-parsha lectures poster (portrait, natural 1000×1440)
+   App chrome (bar, cards, fields, preview) comes from styles.css.
+   Theme colors are CSS vars set inline on #poster by js/parsha.js:
+   --p-bg, --p-primary, --p-accent, --p-on-primary, --p-on-accent.
+   The decorative background, ribbons and icons are SVG images that
+   JS generates in the theme colors (html2canvas can't resolve CSS
+   vars inside SVG, nor clip-path / background-clip:text).
+   ============================================================ */
+
+.page-parsha .board-scale { width: 1000px; height: 1440px; }
+/* The preview scales to fit both width and height, so the viewport must not grow with its content. */
+.page-parsha .preview-panel { min-height: 0; overflow: hidden; }
+.page-parsha .preview-viewport { min-height: 0; }
+@media (max-width: 900px) { .page-parsha .preview-panel { min-height: 70vh; } }
+
+/* ---------------- Form extras ---------------- */
+.check-field {
+  display: flex; align-items: center; gap: 8px; margin: -4px 0 14px;
+  font-size: 13px; color: #374151; cursor: pointer;
+}
+.check-field input { width: 16px; height: 16px; accent-color: var(--accent); margin: 0; }
+
+.mini-select {
+  font-family: 'Heebo', sans-serif; font-size: 13px; padding: 5px 8px;
+  border: 1px solid #d4d8de; border-radius: 8px; background: #fff; color: var(--text);
+  min-width: 0;
+}
+.mini-select:focus { outline: none; border-color: var(--accent); }
+
+.form-panel textarea { resize: vertical; line-height: 1.35; }
+
+.sec-editor {
+  border: 1px solid var(--border); border-radius: 10px; padding: 12px;
+  margin-bottom: 12px; background: #fafbfc;
+}
+.sec-editor__head { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+.sec-editor__head .mini-select { flex: 1 1 110px; }
+.sec-editor__fields { display: grid; grid-template-columns: 1fr; gap: 8px; }
+.sec-editor__auto-note { margin: 0; font-size: 12px; color: var(--muted); }
+
+.icon-btn {
+  flex: 0 0 auto; border: none; background: transparent; color: var(--muted);
+  font-size: 15px; cursor: pointer; line-height: 1; padding: 5px 6px; border-radius: 6px;
+}
+.icon-btn:hover { background: #eef1f4; color: var(--text); }
+.icon-btn:disabled { opacity: .3; cursor: default; background: transparent; }
+.icon-btn--danger:hover { color: var(--danger); background: #fbeceb; }
+
+.events { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.event-editor {
+  border: 1px dashed #cfd6dd; border-radius: 9px; padding: 9px; background: #fff;
+  display: grid; grid-template-columns: 96px 1fr; gap: 7px 8px;
+}
+.event-editor__bar { grid-column: 1 / -1; display: flex; align-items: center; gap: 6px; }
+.event-editor__bar .mini-select { flex: 1; }
+.event-editor__pos { font-size: 11px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.event-editor__time textarea { text-align: center; height: 100%; min-height: 72px; }
+.event-editor__text { display: flex; flex-direction: column; gap: 7px; }
+
+/* ============================================================
+   THE POSTER (natural size 1000×1440 — this is what gets exported)
+   ============================================================ */
+.poster {
+  position: relative;
+  width: 1000px;
+  height: 1440px;
+  overflow: hidden;
+  background: var(--p-bg, #fbf5e8);
+  color: var(--p-primary, #14295a);
+  font-family: 'Heebo', sans-serif;
+}
+.poster__bg { position: absolute; inset: 0; width: 1000px; height: 1440px; display: block; }
+
+.poster__inner {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 112px 72px 30px;
+}
+
+.poster__headline {
+  flex: none;
+  max-width: 650px;
+  margin: 0;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 800;
+  font-size: 60px;               /* JS shrinks it to fit one line */
+  line-height: 1.12;
+  color: var(--p-accent);
+  text-align: center;
+  white-space: nowrap;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, .10);
+}
+
+/* Navy ribbon with pointed ends (shape is an SVG image behind the text) */
+.ribbon {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ribbon__shape { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.ribbon__text {
+  position: relative;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
+  color: var(--p-on-primary);
+  white-space: nowrap;
+  line-height: 1;
+  padding-bottom: 2px;
+}
+.ribbon--top { width: 840px; height: 86px; margin-top: 14px; }
+.ribbon--top .ribbon__text { font-size: 44px; }
+.ribbon--bottom { width: 660px; height: 76px; margin-top: 18px; }
+.ribbon--bottom .ribbon__text { font-size: 38px; }
+
+.poster__ornament { flex: none; width: 380px; height: 28px; margin-top: 14px; display: block; }
+.poster__ornament--bottom { margin-top: 8px; width: 300px; height: 22px; }
+
+/* Content area: everything is em-based off --fit, which JS lowers until it fits */
+.poster__content {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+.poster__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.62em;
+  font-size: calc(30px * var(--fit, 1));
+}
+
+/* Day section */
+.psec { display: flex; flex-direction: column; gap: 0.45em; }
+.psec__head--stacked { text-align: center; padding-top: 0.1em; }
+.psec__title {
+  margin: 0;
+  font-family: 'Rubik', sans-serif; font-weight: 800;
+  font-size: 1.32em; line-height: 1.2; color: var(--p-primary);
+}
+.psec__date {
+  margin: 0.08em 0 0;
+  font-family: 'Rubik', sans-serif; font-weight: 700;
+  font-size: 1.12em; line-height: 1.2; color: var(--p-primary);
+}
+
+.psec__head--divider { display: flex; align-items: center; gap: 0.3em; padding: 0.1em 0; }
+.psec__head--divider .psec__title {
+  flex: 0 1 auto;
+  padding: 0.12em 1.1em 0.18em;
+  background: rgba(255, 255, 255, .6);
+  font-size: 1.22em;
+  text-align: center;
+}
+.psec__line { flex: 1 1 0; display: flex; align-items: center; gap: 0.32em; min-width: 0; }
+.psec__line-bar { flex: 1 1 auto; height: 2px; }
+/* fade toward the poster edge; --p-accent-0 is the accent at zero alpha (avoids a grey midpoint) */
+.psec__line--right .psec__line-bar { background: linear-gradient(to right, var(--p-accent), var(--p-accent-0)); }
+.psec__line--left .psec__line-bar { background: linear-gradient(to left, var(--p-accent), var(--p-accent-0)); }
+.psec__diamond {
+  flex: none; width: 0.32em; height: 0.32em; transform: rotate(45deg);
+  background: var(--p-accent); border: 2px solid var(--p-accent);
+}
+.psec__diamond--hollow { background: transparent; }
+
+/* Lecture card: [icon tile] [text] [time tile]  (RTL: icon on the right) */
+.pcard {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5em;
+  padding: 0.2em;
+  border: 3px solid var(--p-accent);
+  border-radius: 0.6em;
+  background: rgba(255, 255, 255, .5);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, .07);
+}
+.pcard__icon {
+  flex: 0 0 4.1em;
+  min-height: 4.1em;
+  border-radius: 0.3em;
+  background: var(--p-primary);
+  display: flex; align-items: center; justify-content: center;
+}
+.pcard__icon img { width: 2.75em; height: 2.75em; display: block; }
+.pcard__body {
+  flex: 1 1 auto; min-width: 0;
+  display: flex; flex-direction: column; justify-content: center; gap: 0.12em;
+  padding: 0.3em 0.2em;
+  text-align: center;
+}
+.pcard__title {
+  margin: 0; font-family: 'Rubik', sans-serif; font-weight: 700;
+  font-size: 1.1em; line-height: 1.32; color: var(--p-primary);
+}
+.pcard__addr {
+  margin: 0; font-family: 'Rubik', sans-serif; font-weight: 700;
+  font-size: 1em; line-height: 1.32; color: var(--p-accent);
+}
+.pcard__time {
+  flex: 0 0 4.7em;
+  align-self: center;
+  min-height: 3.7em;
+  margin: 0.15em 0.2em;
+  padding: 0.3em 0.2em;
+  border-radius: 0.55em;
+  background: var(--p-accent);
+  color: var(--p-on-accent);
+  display: flex; align-items: center; justify-content: center;
+  text-align: center;
+  font-family: 'Rubik', sans-serif; font-weight: 700;
+  font-size: 1em; line-height: 1.22;
+}
+/* no tabular-nums / inset shadows here: html2canvas mis-spaces the digits and checkers the fill */
+.pcard__time-text { font-size: 1.12em; }
