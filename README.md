@@ -1,8 +1,37 @@
 # מחולל לוח מודעות לבית הכנסת · Synagogue Notice-Board Generator
 
-A static, single-page web app (Hebrew / RTL) for producing a synagogue notice
-board. Fill in the form on the right and the board on the left updates live;
-click **הורדת תמונה (PNG)** to export a print-ready 3200×1800 image.
+A static web app (Hebrew / RTL) with two board generators. Fill in the form on
+the right and the board on the left updates live; click **הורדת תמונה (PNG)** to
+export a print-ready image. A switcher in the top bar moves between the two.
+
+| Board | URL | Output |
+|---|---|---|
+| Synagogue notice board (landscape) | `/` | 3200×1800 PNG |
+| Weekly-parsha lectures poster (portrait) | `/parsha/` | 2000×2880 PNG |
+
+## Weekly-parsha lectures poster (`/parsha/`)
+
+A portrait poster listing a rabbi's lectures for the week: gold headline, a navy
+ribbon with the topic, then one or more **days**, each with a list of **lecture
+cards** (icon tile · place + address · time tile), and a closing ribbon.
+
+- **Automatic parsha & dates (Hebcal)** — pick a Shabbat (it auto-advances to the
+  upcoming one). The topic ribbon becomes *הנושא: פרשת …* (switchable off), and
+  every day linked to a weekday gets its title and date filled in, e.g.
+  *יום שישי* / *כ״ח בתשרי תשפ״ז 9.10.26*, or *שבת פרשת בראשית* for Shabbat.
+- **Days** — add / remove / reorder; heading style *כותרת + תאריך* or
+  *כותרת בין קווים* (title between gold lines); or set a manual title.
+- **Lectures** — add / remove / reorder; choose an icon (synagogue, candle, open
+  book, Torah scroll, Star of David, none); multi-line place and time text.
+- **Auto-fit** — the headline and ribbon texts shrink to one line, and the day /
+  lecture area scales down so any number of lectures fits the poster.
+- **Themes** — nine presets (navy & gold by default) plus a custom palette
+  (background, main color, accent). The decorative background, ribbons, and
+  icons are SVGs generated in the theme colors, so the PNG matches the preview.
+- **Autosave** — kept in `localStorage` under its own key, separate from the
+  notice board.
+
+## Synagogue notice board (`/`)
 
 ## Features
 
@@ -49,9 +78,12 @@ click **הורדת תמונה (PNG)** to export a print-ready 3200×1800 image.
 ## Project structure
 
 ```
-index.html          # markup: form + live board
-css/styles.css      # app chrome + the pixel-accurate 1600×900 board
-js/app.js           # state model, live render, auto-fit, PNG export
+index.html          # notice board: form + live board
+css/styles.css      # app chrome (shared) + the pixel-accurate 1600×900 board
+js/app.js           # notice board: state model, live render, auto-fit, PNG export
+parsha/index.html   # parsha-lectures poster page (served at /parsha/)
+css/parsha.css      # the 1000×1440 portrait poster
+js/parsha.js        # poster: state, Hebcal week dates, SVG artwork, auto-fit, PNG export
 assets/fonts.css    # @font-face for the self-hosted fonts
 assets/fonts/*.woff2 # Heebo + Rubik (Hebrew + Latin subsets)
 assets/synagogue-render.jpg # default sidebar image (Kfar Ganim B synagogue render)
@@ -73,7 +105,7 @@ Any static file server works, e.g.:
 
 ```bash
 python3 -m http.server 8000
-# then open http://127.0.0.1:8000/
+# then open http://127.0.0.1:8000/  (lectures poster: http://127.0.0.1:8000/parsha/)
 ```
 
 ## Deployment
