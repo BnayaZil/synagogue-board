@@ -7,8 +7,8 @@
   <meta name="description" content="מחולל מודעת שיעורים לפרשת השבוע – מלאו את הטופס וקבלו תמונה מוכנה להורדה" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%9C%3C/text%3E%3C/svg%3E" />
   <link rel="stylesheet" href="../assets/fonts.css" />
-  <link rel="stylesheet" href="../css/styles.css?v=parsha1" />
-  <link rel="stylesheet" href="../css/parsha.css?v=parsha1" />
+  <link rel="stylesheet" href="../css/styles.css?v=parsha2" />
+  <link rel="stylesheet" href="../css/parsha.css?v=parsha2" />
 </head>
 <body class="page-parsha">
   <header class="app-bar">
@@ -26,6 +26,7 @@
     <div class="app-bar__actions">
       <button id="btn-example" class="btn btn--ghost" type="button">טען דוגמה</button>
       <button id="btn-clear" class="btn btn--ghost" type="button">נקה הכל</button>
+      <button id="btn-copy" class="btn btn--ghost" type="button" title="העתקת הודעה עם לוח השיעורים וקישורי הזום, להדבקה בוואטסאפ">📋 העתק הודעה</button>
       <button id="btn-download" class="btn btn--primary" type="button">
         <span class="btn__spinner" hidden></span>
         <span class="btn__label">⬇ הורדת תמונה (PNG)</span>
@@ -81,6 +82,28 @@
           </label>
         </fieldset>
 
+        <fieldset class="card">
+          <legend>זום ושיתוף</legend>
+          <label class="field">
+            <span class="field__label">קישור זום כללי (קוד QR אחד בתחתית המודעה)</span>
+            <input type="url" id="zoomUrl" dir="ltr" placeholder="https://zoom.us/j/…" />
+          </label>
+          <label class="field">
+            <span class="field__label">כיתוב ליד הקוד</span>
+            <textarea id="zoomLabel" rows="2" placeholder="השיעורים משודרים בזום"></textarea>
+          </label>
+          <p class="field__note">אפשר גם להוסיף קישור זום לכל שיעור בנפרד (למטה) — יופיע קוד QR קטן על אותו שיעור. שיעור בלי קישור נשאר בלי קוד.</p>
+          <div class="field">
+            <span class="field__label">הודעה לשיתוף (וואטסאפ)</span>
+            <textarea id="shareText" rows="9" readonly></textarea>
+            <div class="share-actions">
+              <button type="button" class="btn btn--ghost btn--sm" id="btnCopyMsg">📋 העתק הודעה</button>
+              <span class="field__note share-actions__status" id="copyStatus" aria-live="polite"></span>
+            </div>
+            <p class="field__note">ההודעה נבנית אוטומטית מהמודעה, כולל קישורי הזום — שלחו אותה יחד עם התמונה כדי שאפשר יהיה ללחוץ על הקישור.</p>
+          </div>
+        </fieldset>
+
         <div class="card">
           <div class="card__head">
             <h2>ימים ושיעורים</h2>
@@ -114,6 +137,10 @@
               </div>
               <img class="poster__ornament" id="p-orn-top" alt="" />
               <div class="poster__content" id="p-content"></div>
+              <div class="poster__zoom" id="p-zoom">
+                <div class="poster__zoom-text" id="p-zoom-text"></div>
+                <div class="qr-box qr-box--lg"><img id="p-zoom-qr" alt="" /></div>
+              </div>
               <div class="ribbon ribbon--bottom" id="p-footer-wrap">
                 <img class="ribbon__shape" id="p-footer-shape" alt="" />
                 <span class="ribbon__text" id="p-footer"></span>
@@ -129,6 +156,7 @@
 
   <script src="../vendor/hebcal.bundle.min.js"></script>
   <script src="../vendor/html2canvas.min.js"></script>
-  <script src="../js/parsha.js?v=parsha1"></script>
+  <script src="../vendor/qrcode-generator.js"></script>
+  <script src="../js/parsha.js?v=parsha2"></script>
 </body>
 </html>

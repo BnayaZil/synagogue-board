@@ -7,6 +7,8 @@
 
   var STORAGE_KEY = 'parshaboard.v1';
   var W = 1000, H = 1440;          // natural poster size (must match css/parsha.css)
+  var FIT_MIN = 0.45, FIT_MAX = 1.3, FIT_STEP = 0.03;
+  var DEFAULT_ZOOM_LABEL = 'השיעורים משודרים בזום\nסרקו את הקוד במצלמת הטלפון להצטרפות';
 
   var DAY_NAMES = ['יום ראשון', 'יום שני', 'יום שלישי', 'יום רביעי', 'יום חמישי', 'יום שישי', 'שבת'];
 
@@ -132,6 +134,8 @@
       headline: 'הרצאות מאת הרב עמיהוד סלומון',
       topic: 'הנושא: פרשת בראשית',
       footer: 'ניתן להקדיש את השיעורים',
+      zoomUrl: '',
+      zoomLabel: DEFAULT_ZOOM_LABEL,
       sections: [
         {
           day: 5, style: 'stacked', title: 'יום שישי', date: 'כ״ח בתשרי תשפ״ז 9.10.26',
@@ -151,7 +155,7 @@
       ]
     };
   }
-  function emptyEvent() { return { icon: 'synagogue', title: '', address: '', time: '' }; }
+  function emptyEvent() { return { icon: 'synagogue', title: '', address: '', time: '', zoom: '' }; }
 
   /* ---------- State ---------- */
   function load() {
@@ -163,6 +167,8 @@
   var state = load() || defaultState();
   if (!Array.isArray(state.sections)) state.sections = defaultState().sections;
   state.sections.forEach(function (s) { if (!Array.isArray(s.events)) s.events = []; });
+  if (state.zoomUrl === undefined) state.zoomUrl = '';
+  if (state.zoomLabel === undefined) state.zoomLabel = DEFAULT_ZOOM_LABEL;
   if (state.theme === 'custom' && !state.customTheme) state.theme = 'navy-gold';
   // Auto-advance to the upcoming Shabbat; a manually-chosen FUTURE date is kept (preparing ahead).
   var upcomingISO = toISO(upcomingSaturday());
@@ -194,6 +200,10 @@
     topic: $('topic'),
     autoTopic: $('autoTopic'),
     footer: $('footer'),
+    zoomUrl: $('zoomUrl'),
+    zoomLabel: $('zoomLabel'),
+    shareText: $('shareText'),
+    copyStatus: $('copyStatus'),
     sections: $('sections'),
     shabbatDate: $('shabbatDate'),
     shabbatStatus: $('shabbatStatus'),
@@ -210,6 +220,9 @@
     pFooterWrap: $('p-footer-wrap'),
     pFooterShape: $('p-footer-shape'),
     pFooter: $('p-footer'),
+    pZoom: $('p-zoom'),
+    pZoomText: $('p-zoom-text'),
+    pZoomQr: $('p-zoom-qr'),
     boardScale: $('boardScale'),
     boardSizer: $('boardSizer'),
     viewport: $('previewViewport')
@@ -311,6 +324,40 @@
     if (!body) return null;
     return '<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 64 64" fill="none" stroke="' +
       color + '" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">' + body + '</svg>';
+  }
+
+  /* ---------- Zoom links + QR codes ---------- */
+  // "zoom.us/j/1" → "https://zoom.us/j/1" so phone cameras treat the QR as a link.
+  function normalizeUrl(u) {
+    u = (u || '').trim();
+    if (!u) return '';
+    return /^[a-z][a-z0-9+.-]*:/i.test(u) ? u : 'https://' + u;
+  }
+  var qrCache = {};
+  function qrUrl(text, dark) {
+    var key = dark + '|' + text;
+    if (qrCache[key]) return qrCache[key];
+    if (typeof window.qrcode !== 'function') return null;
+    var qr;
+    try {
+      window.qrcode.stringToBytes = window.qrcode.stringToBytesFuncs['UTF-8'];
+      qr = window.qrcode(0, 'M');
+      qr.addData(text, 'Byte');
+      qr.make();
+    } catch (e) { return null; }
+    var n = qr.getModuleCount(), m = 2, size = n + 2 * m, d = '';
+    for (var r = 0; r < n; r++) {
+      for (var c = 0; c < n; c++) if (qr.isDark(r, c)) d += 'M' + (c + m) + ' ' + (r + m) + 'h1v1h-1z';
+    }
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + size * 8 + '" height="' + size * 8 +
+      '" viewBox="0 0 ' + size + ' ' + size + '" shape-rendering="crispEdges">' +
+      '<rect width="' + size + '" height="' + size + '" fill="#ffffff"/><path d="' + d + '" fill="' + dark + '"/></svg>';
+    return (qrCache[key] = svgUrl(svg));
+  }
+  // QR modules in the theme's main color when it is dark enough to scan reliably, else black.
+  function qrDark() {
+    var primary = paletteFor(effectiveVars(state.theme)).primary;
+    return luminance(primary) < 0.12 ? primary : '#000000';
   }
 
   /* ============================================================
@@ -462,6 +509,21 @@
       body.appendChild(addr);
     }
     card.appendChild(body);
+    var zoom = normalizeUrl(ev.zoom);
+    var qrSrc = zoom && qrUrl(zoom, qrDark());
+    if (qrSrc) {
+      var qrWrap = el('div', 'pcard__qr');
+      var box = el('div', 'qr-box');
+      var qimg = el('img');
+      qimg.alt = '';
+      qimg.src = qrSrc;
+      var lbl = el('span', 'qr-box__label');
+      lbl.textContent = 'ZOOM';
+      box.appendChild(qimg);
+      box.appendChild(lbl);
+      qrWrap.appendChild(box);
+      card.appendChild(qrWrap);
+    }
     if ((ev.time || '').trim()) {
       var time = el('div', 'pcard__time');
       var tt = el('span', 'pcard__time-text');
@@ -480,6 +542,20 @@
     var hasFooter = (state.footer || '').trim() !== '';
     els.pFooterWrap.style.display = hasFooter ? '' : 'none';
 
+    var zoomUrl = normalizeUrl(state.zoomUrl);
+    var zoomQr = zoomUrl && qrUrl(zoomUrl, qrDark());
+    els.pZoom.style.display = zoomQr ? '' : 'none';
+    if (zoomQr) {
+      els.pZoomQr.src = zoomQr;
+      els.pZoomText.innerHTML = '';
+      String(state.zoomLabel || '').split('\n').forEach(function (line) {
+        if (!line.trim()) return;
+        var p = el('p', 'poster__zoom-line');
+        p.textContent = line;
+        els.pZoomText.appendChild(p);
+      });
+    }
+
     var stack = el('div', 'poster__stack');
     state.sections.forEach(function (sec) {
       var s = el('section', 'psec');
@@ -494,6 +570,7 @@
     fitLine(els.pTopic, 840 - 2 * 64, 44, 22);
     fitLine(els.pFooter, 660 - 2 * 58, 38, 20);
     fitContent();
+    els.shareText.value = shareMessage();
   }
 
   /* Shrink a single-line element's font until it is no wider than maxWidth. */
@@ -506,16 +583,108 @@
     }
   }
 
-  /* Lower --fit (all card/section sizes are em-based off it) until the stack fits the content area. */
+  /* Size the day/lecture stack to the content area: tune --fit (every card/section size is
+     em-based off it) to the largest value that still fits, between FIT_MIN and FIT_MAX.
+     Growing stops before any text line wraps — bigger-but-broken lines read worse than
+     taller cards — and whatever height is still spare is shared out as taller cards. */
   function fitContent() {
     var area = els.pContent;
     var stack = area.firstChild;
     if (!stack) return;
+    var cards = stack.getElementsByClassName('pcard');
+    var i;
+    for (i = 0; i < cards.length; i++) cards[i].style.minHeight = '';
+    var avail = area.clientHeight;
+    var setFit = function (f) { stack.style.setProperty('--fit', f.toFixed(2)); };
+    var fits = function () { return stack.offsetHeight <= avail; };
+    var texts = stack.querySelectorAll('.pcard__title, .pcard__addr, .pcard__time-text, .psec__title, .psec__date');
+    var lineCount = function () {
+      var n = 0;
+      for (var t = 0; t < texts.length; t++) {
+        n += Math.round(texts[t].offsetHeight / (parseFloat(getComputedStyle(texts[t]).lineHeight) || 1));
+      }
+      return n;
+    };
     var fit = 1;
-    stack.style.setProperty('--fit', '1');
-    while (fit > 0.45 && stack.offsetHeight > area.clientHeight) {
-      fit -= 0.03;
-      stack.style.setProperty('--fit', fit.toFixed(2));
+    setFit(fit);
+    if (fits()) {
+      var lines = lineCount();
+      while (Math.round((fit + FIT_STEP) * 100) <= FIT_MAX * 100) {
+        setFit(fit + FIT_STEP);
+        if (!fits() || lineCount() > lines) { setFit(fit); break; }
+        fit += FIT_STEP;
+      }
+    } else {
+      while (fit > FIT_MIN && !fits()) { fit -= FIT_STEP; setFit(fit); }
+    }
+    var spare = avail - stack.offsetHeight;
+    if (spare > 1 && cards.length) {
+      // Capped per card so a lone lecture doesn't turn into a slab; any rest stays centered.
+      var grow = Math.min(spare / cards.length, 4.5 * 30 * fit);
+      var heights = [];
+      for (i = 0; i < cards.length; i++) heights.push(cards[i].offsetHeight);
+      for (i = 0; i < cards.length; i++) cards[i].style.minHeight = (heights[i] + grow) + 'px';
+    }
+  }
+
+  /* ============================================================
+     SHARE MESSAGE (WhatsApp-ready text with the Zoom links)
+     ============================================================ */
+  function oneLine(text, sep) {
+    return String(text || '').split('\n').map(function (l) { return l.trim(); }).filter(Boolean).join(sep);
+  }
+  function shareMessage() {
+    var out = [];
+    if ((state.headline || '').trim()) out.push('*' + state.headline.trim() + '*');
+    if ((state.topic || '').trim()) out.push('*' + state.topic.trim() + '*');
+    state.sections.forEach(function (sec) {
+      var lines = [];
+      var head = (sec.title || '').trim();
+      if (head) {
+        var date = (sec.style || 'stacked') === 'stacked' ? (sec.date || '').trim() : '';
+        lines.push('*' + head + '*' + (date ? ' | ' + date : ''));
+      }
+      (sec.events || []).forEach(function (ev) {
+        var what = [oneLine(ev.title, ', '), oneLine(ev.address, ', ')].filter(Boolean).join(', ');
+        var time = oneLine(ev.time, ' ');
+        if (!what && !time) return;
+        lines.push('• ' + (time ? time + ' – ' : '') + what);
+        var zoom = normalizeUrl(ev.zoom);
+        if (zoom) lines.push('   להצטרפות בזום: ' + zoom);
+      });
+      if (lines.length) { out.push(''); out.push.apply(out, lines); }
+    });
+    var zoomUrl = normalizeUrl(state.zoomUrl);
+    if (zoomUrl) { out.push(''); out.push('📹 להצטרפות לשיעורים בזום:'); out.push(zoomUrl); }
+    if ((state.footer || '').trim()) { out.push(''); out.push(state.footer.trim()); }
+    return out.join('\n').trim();
+  }
+  var copyTimer = null;
+  function copyMessage() {
+    var text = shareMessage();
+    var done = function (ok) {
+      els.copyStatus.textContent = ok ? '✓ ההודעה הועתקה — הדביקו בוואטסאפ יחד עם התמונה'
+        : 'לא ניתן להעתיק אוטומטית — סמנו את הטקסט והעתיקו ידנית';
+      var btn = $('btn-copy');
+      btn.textContent = ok ? '✓ הועתק' : '📋 העתק הודעה';
+      clearTimeout(copyTimer);
+      copyTimer = setTimeout(function () {
+        els.copyStatus.textContent = '';
+        btn.textContent = '📋 העתק הודעה';
+      }, 3000);
+    };
+    var fallback = function () {
+      try {
+        els.shareText.value = text;
+        els.shareText.focus();
+        els.shareText.select();
+        done(document.execCommand('copy'));
+      } catch (e) { done(false); }
+    };
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, fallback);
+    } else {
+      fallback();
     }
   }
 
@@ -644,6 +813,13 @@
     text.appendChild(textInput(ev.title, 'מקום / נושא (Enter לשורה נוספת)', function (v) { ev.title = v; }, true));
     text.appendChild(textInput(ev.address, 'כתובת (בצבע ההדגשה)', function (v) { ev.address = v; }));
     box.appendChild(text);
+
+    var zoomWrap = el('div', 'event-editor__zoom');
+    var zoomInput = textInput(ev.zoom, 'קישור זום לשיעור זה (אופציונלי)', function (v) { ev.zoom = v; });
+    zoomInput.type = 'url';
+    zoomInput.setAttribute('dir', 'ltr');
+    zoomWrap.appendChild(zoomInput);
+    box.appendChild(zoomWrap);
     return box;
   }
 
@@ -652,6 +828,8 @@
     els.topic.value = state.topic || '';
     els.autoTopic.checked = state.autoTopic !== false;
     els.footer.value = state.footer || '';
+    els.zoomUrl.value = state.zoomUrl || '';
+    els.zoomLabel.value = state.zoomLabel || '';
     els.shabbatDate.value = state.shabbatDate || '';
     renderThemes();
     renderPalette();
@@ -766,6 +944,10 @@
     els.headline.addEventListener('input', function () { state.headline = els.headline.value; renderPoster(); save(); });
     els.topic.addEventListener('input', function () { state.topic = els.topic.value; renderPoster(); save(); });
     els.footer.addEventListener('input', function () { state.footer = els.footer.value; renderPoster(); save(); });
+    els.zoomUrl.addEventListener('input', function () { state.zoomUrl = els.zoomUrl.value; renderPoster(); save(); });
+    els.zoomLabel.addEventListener('input', function () { state.zoomLabel = els.zoomLabel.value; renderPoster(); save(); });
+    $('btn-copy').addEventListener('click', copyMessage);
+    $('btnCopyMsg').addEventListener('click', copyMessage);
     els.autoTopic.addEventListener('change', function () {
       state.autoTopic = els.autoTopic.checked;
       if (state.autoTopic) applyShabbat(); else save();
@@ -789,10 +971,9 @@
     $('btn-download').addEventListener('click', download);
     $('btn-example').addEventListener('click', function () {
       if (!confirm('לטעון את תוכן הדוגמה? הפעולה תחליף את מה שממולא כעת.')) return;
-      var keepTheme = state.theme, keepCustom = state.customTheme;
+      var keep = { theme: state.theme, customTheme: state.customTheme, zoomUrl: state.zoomUrl, zoomLabel: state.zoomLabel };
       state = defaultState();
-      state.theme = keepTheme;
-      state.customTheme = keepCustom;
+      Object.keys(keep).forEach(function (k) { state[k] = keep[k]; });
       applyShabbat();
     });
     $('btn-clear').addEventListener('click', function () {
@@ -803,6 +984,7 @@
         shabbatDate: toISO(upcomingSaturday()),
         autoTopic: true,
         headline: '', topic: '', footer: '',
+        zoomUrl: state.zoomUrl || '', zoomLabel: state.zoomLabel || DEFAULT_ZOOM_LABEL,
         sections: [{ day: '', style: 'stacked', title: '', date: '', events: [emptyEvent()] }]
       };
       syncFormFromState(); renderPoster(); save();
