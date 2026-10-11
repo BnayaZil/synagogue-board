@@ -24,7 +24,15 @@ cards** (icon tile · place + address · time tile), and a closing ribbon.
 - **Lectures** — add / remove / reorder; choose an icon (synagogue, candle, open
   book, Torah scroll, Star of David, none); multi-line place and time text.
 - **Auto-fit** — the headline and ribbon texts shrink to one line, and the day /
-  lecture area scales down so any number of lectures fits the poster.
+  lecture area scales to fill the poster: many lectures shrink to fit; with only a
+  few, the text grows (until a line would wrap) and the cards get taller.
+- **Zoom** — an optional poster-wide Zoom link prints one QR code (with an
+  editable caption) above the bottom ribbon, and each lecture can have its own
+  link, which prints a small QR code on that card. Links without `https://` get it
+  added, so phone cameras open them.
+- **Share message** — **📋 העתק הודעה** copies a WhatsApp-ready text version of
+  the poster (bold headings, one line per lecture, the Zoom links) to send along
+  with the image, since a PNG can't hold clickable links.
 - **Themes** — nine presets (navy & gold by default) plus a custom palette
   (background, main color, accent). The decorative background, ribbons, and
   icons are SVGs generated in the theme colors, so the PNG matches the preview.
@@ -90,6 +98,7 @@ assets/synagogue-render.jpg # default sidebar image (Kfar Ganim B synagogue rend
 vendor/quill.*      # rich-text editor
 vendor/html2canvas.min.js   # DOM → canvas for the PNG export
 vendor/hebcal.bundle.min.js # @hebcal/core — parsha + Shabbat times (GPLv2)
+vendor/qrcode-generator.js  # qrcode-generator 1.4.4 — QR codes for the Zoom links (MIT)
 ```
 
 ## Licenses of bundled libraries
@@ -97,6 +106,7 @@ vendor/hebcal.bundle.min.js # @hebcal/core — parsha + Shabbat times (GPLv2)
 - **@hebcal/core** — GPLv2
 - **Quill** — BSD-3-Clause
 - **html2canvas** — MIT
+- **qrcode-generator** — MIT
 - **Heebo / Rubik** fonts — SIL Open Font License 1.1
 
 ## Running locally

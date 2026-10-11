@@ -29,6 +29,16 @@
 .mini-select:focus { outline: none; border-color: var(--accent); }
 
 .form-panel textarea { resize: vertical; line-height: 1.35; }
+.form-panel input[type="url"] {
+  width: 100%; font-family: 'Heebo', sans-serif; font-size: 15px; padding: 9px 12px;
+  border: 1px solid #d4d8de; border-radius: 9px; background: #fff; color: var(--text);
+}
+.form-panel input[type="url"]:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(61,113,134,.12); }
+#shareText { font-size: 13.5px; background: #fafbfc; color: #374151; }
+.share-actions { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.share-actions__status { margin: 0; }
+.event-editor__zoom { grid-column: 1 / -1; }
+.event-editor__zoom input { font-size: 13.5px; padding: 7px 10px; }
 
 .sec-editor {
   border: 1px solid var(--border); border-radius: 10px; padding: 12px;
@@ -121,7 +131,8 @@
 .poster__ornament { flex: none; width: 380px; height: 28px; margin-top: 14px; display: block; }
 .poster__ornament--bottom { margin-top: 8px; width: 300px; height: 22px; }
 
-/* Content area: everything is em-based off --fit, which JS lowers until it fits */
+/* Content area: everything is em-based off --fit, which JS tunes so the stack fills it;
+   any height still spare is then shared out to the cards as extra min-height. */
 .poster__content {
   flex: 1 1 auto;
   min-height: 0;
@@ -206,7 +217,6 @@
 }
 .pcard__time {
   flex: 0 0 4.7em;
-  align-self: center;
   min-height: 3.7em;
   margin: 0.15em 0.2em;
   padding: 0.3em 0.2em;
@@ -220,3 +230,39 @@
 }
 /* no tabular-nums / inset shadows here: html2canvas mis-spaces the digits and checkers the fill */
 .pcard__time-text { font-size: 1.12em; }
+
+/* QR codes: dark modules on white for reliable scanning, in any theme */
+.qr-box {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 0.14em;
+  border: 2px solid var(--p-accent);
+  border-radius: 0.25em;
+  background: #ffffff;
+}
+.qr-box img { display: block; width: 2.9em; height: 2.9em; }
+.qr-box__label {
+  margin-top: 0.1em;
+  font-family: 'Rubik', sans-serif; font-weight: 700;
+  font-size: 0.42em; line-height: 1; color: var(--p-primary);
+}
+.pcard__qr { flex: none; align-self: center; }
+
+/* Poster-wide Zoom QR: fixed size (outside the --fit scaling) so it always stays scannable */
+.poster__zoom {
+  flex: none;
+  max-width: 800px;
+  display: flex; align-items: center; gap: 20px;
+  margin-top: 14px;
+  padding: 10px 12px 10px 24px;
+  border: 2px solid var(--p-accent);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .6);
+}
+.poster__zoom-text { text-align: center; min-width: 0; }
+.poster__zoom-line {
+  margin: 0; font-family: 'Rubik', sans-serif; font-weight: 700;
+  font-size: 22px; line-height: 1.3; color: var(--p-accent);
+}
+.poster__zoom-line:first-child { font-size: 30px; color: var(--p-primary); }
+.qr-box--lg { padding: 6px; border-radius: 9px; }
+.qr-box--lg img { width: 108px; height: 108px; }
